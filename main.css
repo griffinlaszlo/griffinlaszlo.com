@@ -1,0 +1,2123 @@
+
+
+.headshot {
+    /* Place the image to the right side of the container */
+    float: right; 
+    /* Set a decent size for the image */
+    width: 300px; /* Adjust the width as needed */
+    height: auto; /* This keeps the aspect ratio of the image */
+    margin: 0 550px 10px 5px; /* Adds some space around the image */
+    border: 2px solid black
+}
+
+.center-container {
+    display: flex; /* Use flexbox */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    height: 100%; /* Take full height of the viewport */
+}
+
+.popup {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top of other content */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.4); /* Black with opacity */
+    border-width: 20ch;
+}
+
+
+.popup-content {
+    position: absolute; /* Changed from 'margin' to 'position' */
+    background-color: #fefefe;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 300px; /* Fixed width */
+    /* Remove margin and add initial top and left values */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: red;
+    text-decoration: none;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+
+
+
+html {
+    min-height: 100%;
+    /* cursor: url('cursor-arrow.png') 1 0, auto; */
+    cursor: url('cursor2-arrow.png') 0 0, auto;
+}
+
+a {
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+
+body {
+    font-family: 'W95FA', sans-serif;
+   /* font-family: 'courier-prime.regular'; */
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    color: #;
+    background-color: #008080;
+    transition: background-color 0.5s ease;
+    /* cursor: url('cursor-arrow.png') 1 0, auto; */
+    cursor: url('cursor2-arrow.png') 0 0, auto;
+}
+
+header {
+    font-family: 'W95FA', sans-serif;
+    /*font-family: 'Courier New', Courier, monospace; */
+    background: #008080;
+    color: #fff;
+    padding: 1rem 0;
+    text-align: center;
+    transition: background-color 0.5s ease, opacity 0.2s ease;
+    position: relative;
+}
+
+#site-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 60px;
+    width: auto;
+    z-index: 0;
+}
+
+#title {
+    position: relative;
+    z-index: 1;
+}
+
+#title.has-logo-behind {
+    margin-top: 12px;
+}
+
+body.header-hidden nav {
+    opacity: 0;
+    pointer-events: none;
+}
+
+body.dark-mode {
+    background-color: #000;
+}
+
+body.dark-mode header {
+    background: #000;
+}
+
+
+nav {
+    transition: opacity 0.2s ease;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 20px;
+}
+
+nav ul li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+main {
+    font-family: 'Courier New', Courier, monospace;
+    padding: 20px;
+}
+
+footer {
+
+        font-family: 'W95FA', sans-serif;
+    /*font-family: 'Courier New', Courier, monospace; */
+    background: rgb(0, 0, 0);
+    color: #fff;
+    padding: 1rem 0;
+    text-align: center;
+    text-align: center;
+    padding: 1px 0; /* Reduced padding for closer text */
+    background: #C0C0C0;
+    color: #ffffff;
+    position: fixed; /* Stick to the bottom */
+    bottom: 0; /* At the very bottom */
+    width: 100%; /* Full width */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    transition: background-color 0.5s ease;
+}
+
+/* for virgil icon in footer */
+.small-image {
+    width: 200px;
+}
+
+.desktop-icon-group {
+    position: absolute;
+    width: 100px;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+
+#settings-icon-group {
+    top: 17px;
+    right: 10px;
+}
+
+#computer-icon-group {
+    top: 74px;
+    right: 10px;
+}
+
+#folder-icon-group {
+    top: 181px;
+    right: 10px;
+}
+
+#files-icon-group {
+    top: 555px;
+    right: 10px;
+}
+
+/* Same row as random, nudged right to close the gap. Kept as a right offset
+   rather than the absolute left the Copy Layout button emits - that value is
+   only true at the width it was copied on, and every icon here hugs the right
+   edge so the column holds together at any window size. */
+#college-icon-group {
+    top: 555px;
+    right: 81px;
+}
+
+#google-icon-group {
+    top: 264px;
+    right: 8px;
+}
+
+#dancing-icon-group {
+    top: 339px;
+    right: 10px;
+}
+
+#moon-icon-group {
+    top: 419px;
+    right: 10px;
+}
+
+#dino-icon-group {
+    top: 501px;
+    right: 10px;
+}
+
+/* Second column: beside dino, above college. Snapped to dino's row (501) and
+   college's column (81) rather than the 499/79 the drag landed on - a couple
+   of pixels off reads as misalignment at icon size. */
+#incognito-icon-group {
+    top: 501px;
+    right: 81px;
+}
+
+/* Directly above sneaky links, sharing the moon's row so the second column
+   lines up with the right-hand one at every step. */
+#tips-icon-group {
+    top: 419px;
+    right: 81px;
+}
+
+/* Second column, sharing dancing's row - directly above free ideas (419px,
+   same column). Nudged a few px above dancing's own 339px row so the label
+   below it clears free ideas with room to spare. */
+#shop-icon-group {
+    top: 330px;
+    right: 81px;
+}
+
+/* Second column, level with now playing's row - directly above arcade */
+#griffinland-icon-group {
+    top: 181px;
+    right: 81px;
+}
+
+/* 40px pixel-art gif, shown at 44px like the moon beside it in the column */
+#griffinland-icon {
+    -webkit-user-drag: none;
+    user-drag: none;
+    user-select: none;
+    position: absolute;
+    top: 0;
+    right: 28px; /* centers the 44px icon within the 100px group */
+    width: 44px;
+    height: auto;
+    image-rendering: pixelated;
+}
+
+#griffinland-icon-label {
+    position: absolute;
+    right: 0;
+    width: 100px;
+    text-align: center;
+    font-family: 'W95FA', sans-serif;
+    font-size: 13px;
+    line-height: 1.2;
+    top: 48px;
+}
+
+#griffinland-icon-label a {
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Second column, directly above shop, level with google's row */
+#arcade-icon-group {
+    top: 252px;
+    right: 81px;
+}
+
+#arcade-icon {
+    -webkit-user-drag: none;
+    user-drag: none;
+    user-select: none;
+    position: absolute;
+    top: 0;
+    right: 26px; /* centers the 48px icon within the 100px group */
+    width: 48px;
+    height: auto;
+    image-rendering: pixelated;
+}
+
+#arcade-icon-label {
+    position: absolute;
+    right: 0;
+    width: 100px;
+    text-align: center;
+    font-family: 'W95FA', sans-serif;
+    font-size: 13px;
+    line-height: 1.2;
+    top: 48px;
+}
+
+#arcade-icon-label a {
+    color: #fff;
+    text-decoration: none;
+}
+
+#computer-icon,
+#folder-icon,
+#files-icon,
+#google-icon,
+#dancing-icon,
+#moon-icon,
+#dino-icon,
+#settings-icon,
+#incognito-icon,
+#tips-icon,
+#college-icon {
+    -webkit-user-drag: none;
+    user-drag: none;
+    user-select: none;
+    position: absolute;
+    top: 0;
+    height: auto; /* Maintain aspect ratio */
+}
+
+#computer-icon,
+#files-icon,
+#college-icon {
+    right: 0;
+    width: 100px;
+}
+
+#folder-icon {
+    right: 28px; /* centers the 44px icon within the 100px group */
+    width: 44px;
+}
+
+#google-icon {
+    right: 30px; /* centers the narrower icon within the 100px group */
+    width: 40px;
+}
+
+#dancing-icon {
+    right: 29px; /* centers the 42px icon within the 100px group */
+    width: 42px;
+}
+
+#moon-icon {
+    right: 28px; /* centers the 44px icon within the 100px group */
+    width: 44px;
+}
+
+#dino-icon {
+    right: 28px; /* centers the 44px icon within the 100px group */
+    width: 44px;
+}
+
+#settings-icon {
+    right: 28px; /* centers the 44px icon within the 100px group */
+    width: 44px;
+}
+
+/* Bigger than the other small icons because it's cropped tight to the figure -
+   the source had ~20px of dead teal on every side, so at a matching 44px it
+   read smaller than everything around it.
+   pixelated so the 141px source doesn't blur on its way down - it's pixel art,
+   and smoothing it loses the thing that makes it read. */
+#incognito-icon {
+    right: 25px; /* centers the 50px icon within the 100px group */
+    width: 50px;
+    image-rendering: pixelated;
+}
+
+/* Sized by HEIGHT rather than width, unlike every other icon here. The bulb
+   crops to 99x142 - much taller than it is wide - so matching the others'
+   50px width would have made it tower over them. 35px wide is ~50px tall,
+   which is the dimension the eye actually compares. */
+#tips-icon {
+    right: 33px; /* centers the 35px icon within the 100px group */
+    width: 35px;
+    image-rendering: pixelated;
+}
+
+#computer-icon.as-settings-icon {
+    right: 28px; /* match #settings-icon's actual size while previewing it */
+    width: 44px;
+}
+
+/* NOT full-width like #files-icon/#college-icon - those are folder-icon.png,
+   which carries a lot of dead space inside its own square canvas, so 100px
+   reads as icon-sized. This cutout is trimmed tight to the figure (like
+   incognito.png), so it needs the same narrower, centered treatment. */
+#shop-icon {
+    -webkit-user-drag: none;
+    user-drag: none;
+    user-select: none;
+    position: absolute;
+    top: 0;
+    right: 19px; /* centers the 62px icon within the 100px group */
+    width: 62px;
+    height: auto;
+}
+
+#computer-icon-label,
+#folder-icon-label,
+#files-icon-label,
+#google-icon-label,
+#dancing-icon-label,
+#moon-icon-label,
+#dino-icon-label,
+#settings-icon-label,
+#incognito-icon-label,
+#tips-icon-label,
+#college-icon-label {
+    position: absolute;
+    right: 0;
+    width: 100px;
+    text-align: center;
+    font-family: 'W95FA', sans-serif;
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+#computer-icon-label a,
+#folder-icon-label a,
+#files-icon-label a,
+#google-icon-label a,
+#dancing-icon-label a,
+#moon-icon-label a,
+#dino-icon-label a,
+#settings-icon-label a,
+#incognito-icon-label a,
+#tips-icon-label a,
+#college-icon-label a {
+    color: #fff;
+    text-decoration: none;
+}
+
+#computer-icon-label {
+    top: 78px; /* 118px original - 40px group top */
+}
+
+#dancing-icon-label {
+    top: 45px;
+}
+
+#moon-icon-label {
+    top: 48px;
+}
+
+#dino-icon-label {
+    top: 48px;
+}
+
+/* 50px wide at the source's 141:136 ratio is ~48px tall, so the label sits a
+   touch below the 44px icons' 48px */
+#incognito-icon-label {
+    top: 52px;
+}
+
+/* 35px wide at the bulb's 99:142 ratio is ~50px tall */
+#tips-icon-label {
+    top: 54px;
+}
+
+#settings-icon-label {
+    top: 43px;
+}
+
+#college-icon-label {
+    top: 70px;
+}
+
+/* 62px wide at the cutout's ~320:352 ratio is ~68px tall - pulled in close
+   under the art rather than the usual +4px gap, since the ski tip's sparse
+   bottom pixels leave visual room the bounding box doesn't. */
+#shop-icon-label {
+    position: absolute;
+    right: 0;
+    width: 100px;
+    text-align: center;
+    font-family: 'W95FA', sans-serif;
+    font-size: 13px;
+    line-height: 1.2;
+    top: 65px;
+}
+
+#shop-icon-label a {
+    color: #fff;
+    text-decoration: none;
+}
+
+#computer-icon-label.as-settings-label {
+    top: 43px; /* match #settings-icon-label's tighter spacing while previewing it */
+}
+
+#folder-icon-label {
+    top: 48px;
+}
+
+#files-icon-label {
+    top: 70px;
+}
+
+#google-icon-label {
+    top: 41px; /* 341px original - 300px group top */
+}
+
+
+
+
+#projects-by-me, #about-me {
+    font-family: 'Courier New', Courier, monospace;
+    white-space: pre-wrap; /* Preserves spaces and line breaks */
+    /* Other styling as needed */
+    width: 40vw; /* 50% of the viewport width */
+    color: 0000000;
+    border-color: #888;
+    border-width: 2;
+    background-color: #ffffff;
+
+    padding: 0px; /* Optional padding for better spacing */
+    box-sizing: border-box; /* Include padding in the width calculation */
+    /* Add other styling as needed */
+}
+
+
+
+
+body {
+    font-family: 'courier-prime.regular';
+	font-size: var(--main-fontsize);
+    line-height: var(--main-lineheight);
+    overflow: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.clearafter:after{
+    content: '';
+    display: block;
+    clear: both;
+}
+
+
+/* WINDOWS
+*********************************************************/
+.windows-header-wrapper {
+    padding: 2px;
+    background: rgb(51,78,165);
+    background: var(--popup-header-light-bg, linear-gradient(90deg, rgba(51,78,165,1) 0%, rgba(76,127,193,1) 100%));
+    position: relative;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    user-drag: none;
+    cursor: url('cursor2-arrow.png') 0 0, auto !important;
+    transition: background 0.5s ease;
+}
+body.pointer-red .windows-header-wrapper {
+    cursor: url('cursor-arrow.png') 1 0, auto !important;
+}
+body.dark-mode .windows-header-wrapper {
+    background: var(--popup-header-dark-bg, #4a4a4a);
+}
+/* Only the original bar darkens. The taskbar is Win95 chrome and keeps its
+   grey in both modes - a dark taskbar reads as a different UI rather than the
+   same one at night. Scoped so the Dark Mode > Footer setting still works for
+   whoever switches back to the original bar. */
+body.dark-mode.footer-dark.bottom-bar-classic footer {
+    background: #333333;
+}
+
+/* Bottom bar: taskbar by default, original centred line as an option */
+.footer-classic {
+    display: none;
+}
+body.bottom-bar-classic .footer-classic {
+    display: block;
+}
+body.bottom-bar-classic .taskbar {
+    display: none;
+}
+/* Fixed px, not vw. Title bars used to be sized in viewport units, which tied
+   the chrome to the window: ~14px on a 1920 monitor, 9.6px at 1280, and
+   genuinely hard to read in a narrow window. Chrome shouldn't reflow with the
+   viewport - a real title bar is the same size whatever the screen. These are
+   the values the max-width:960px block already used, so the two now agree
+   instead of only mobile being pinned. */
+.window-title {
+    font-size: 13px;
+    line-height: 16px;
+    font-weight: bold;
+    color: #fff;
+    width: calc(75%);
+    float: left;
+    text-align: left;
+}
+/* Small icon sat at the left of a window's title bar, the way a Win95 window
+   carries the icon of whatever it's showing. Sized in em so it tracks the
+   title text at every breakpoint. */
+/* vertical-align: middle rather than a fixed em offset - it centres the icon
+   on the text's own midline whatever height the icon is, so the per-icon
+   sizes in main.js can change without knocking anything out of line. A fixed
+   offset only lines up at one size, and grew upward as icons got bigger. */
+.window-title-icon {
+    height: 1.15em;
+    width: auto;
+    margin-right: 5px;
+    vertical-align: middle;
+    image-rendering: pixelated;
+}
+
+.window-icons {
+    text-align: right;
+    float: left;
+    width: 25%;
+}
+.window-icons img {
+    height: 13px;
+    margin-top: 0;
+    margin-left: 3px;
+    border: 1px outset #dad7d2;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+
+.window-icons .win-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    box-sizing: content-box;
+    height: 18px;
+    min-width: 18px;
+    margin-top: 0;
+    margin-left: 1px;
+    padding: 0;
+    border: 1px outset #dad7d2;
+    background: #d8d8d8;
+    color: #000;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-weight: bold;
+    font-size: 13px;
+    line-height: normal;
+    text-align: center;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+    user-select: none;
+}
+.window-icons .win-btn:active {
+    border-style: inset;
+}
+.win-btn .glyph {
+    display: block;
+}
+.win-btn .glyph-min {
+    width: 60%;
+    height: 2px;
+    background: #000;
+    align-self: flex-end;
+    margin-bottom: 2px;
+}
+.win-btn .glyph-max {
+    width: 72%;
+    height: 68%;
+    border: 2px solid #000;
+    border-top-width: 3px;
+    box-sizing: border-box;
+}
+
+
+
+/* GENERAL POPUP
+*********************************************************/
+.popup-window {
+    text-align: right;
+    width: 32vw;
+    position: absolute;
+    z-index: 10000;
+    border: 4px ridge #d8d8d8;
+    font-family: Tahoma, Geneva, sans-serif;
+}
+
+.popup-window.iconize .popup-inner-wrapper {
+    display: none;
+}
+/*
+.popup-window.resize {
+    width: 50vw;
+    left: 50vw;
+    top: 0;
+    margin-top: 0;
+    height: calc(100vh);
+    background-color: #fff;
+}
+.popup-window.resize .popup-inner-wrapper {
+    margin-top: 14vh;
+}
+*/
+
+
+.popup-window .windows-header-wrapper {
+    top: 0;
+}
+.popup-inner-wrapper {
+    padding: 0;
+    background-color: #fff;
+    transition: background-color 0.5s ease;
+}
+body.dark-mode .popup-inner-wrapper {
+    background-color: #d3d3d3;
+}
+.popup-inner-wrapper .inner-title {
+    text-align: center;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-size: 13px;
+    font-weight: bold;
+}
+.popup-close-wrapper span {
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+.popup-window .popup-inner-wrapper img,
+.popup-window .popup-inner-wrapper video {
+    width: 100%;
+    display: block;
+}
+
+/* CANARY YELLOW
+*********************************************************/
+#canary-yellow-wrapper {
+    text-align: right;
+    margin-bottom: 2vw;
+    width: 28vw;
+    position: absolute;
+    z-index: 10000;
+    left: 16vw;
+    top: 30vw;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+
+/* TWITTERBOT YT VIDEO
+*********************************************************/
+#postmodern-wrapper {
+    text-align: right;
+    margin-bottom: 2vw;
+    width: 32vw;
+    position: absolute;
+    z-index: 10000;
+    right: 10vw;
+    top: 30vw;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+#under-ghost-wrapper {
+    text-align: right;
+    margin-bottom: 2vw;
+    width: 20vw;
+    position: absolute;
+    z-index: 9999;
+    left: 40vw;
+    top: 26vw;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+/* SNAPCHAT NOW PLAYING
+*********************************************************/
+/* ===== Press windows =======================================================
+   Generated by buildPressWindows() in main.js, one per article, sharing the
+   TECH CRUNCH window's shape: headline over the article's own preview image,
+   the whole image linking out to the piece. */
+.press-window {
+    text-align: right;
+    margin-bottom: 2vw;
+    width: 32vw;
+    max-width: 620px;
+    min-width: 280px;
+    position: absolute;
+    z-index: 10000;
+    /* Offset from TECH CRUNCH's 5vw/5vw so opening a second one doesn't land
+       exactly on top of the first. Each is draggable from there. */
+    left: 9vw;
+    top: 9vw;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+.press-window .inner-title {
+    text-align: left;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+/* cleveland.com blocks automated requests, so it has no preview image and the
+   link becomes the card. Sized to read as a deliberate choice rather than a
+   picture that failed to load. */
+.press-link-only {
+    display: block;
+    padding: 22px 10px 26px;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 14px;
+    text-align: center;
+    color: #334ea5;
+}
+
+#snapmap-wrapper {
+    text-align: right;
+    margin-bottom: 2vw;
+    width: 32vw;
+    position: absolute;
+    z-index: 10000;
+    left: 5vw;
+    top: 5vw;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+#snapmap-wrapper .inner-title {
+    text-align: left;
+    padding-left: 8px;
+}
+
+/* FILES WINDOW (MVP)
+*********************************************************/
+#patent-figures-window {
+    text-align: right;
+    width: 21vw;
+    position: absolute;
+    z-index: 10000;
+    left: 40vw;
+    top: 12vw;
+    border: 4px ridge #d8d8d8;
+}
+
+#s13688-window {
+    text-align: right;
+    width: 27vw;
+    position: absolute;
+    z-index: 10001;
+    left: 63vw;
+    top: 4vw;
+    border: 4px ridge #d8d8d8;
+}
+
+#ambient-streaming-window {
+    text-align: right;
+    width: 46vw;
+    position: absolute;
+    z-index: 10000;
+    left: 10vw;
+    top: 60vw;
+    border: 4px ridge #d8d8d8;
+}
+
+#ambient-streaming-window .window-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pdf-viewer {
+    width: 100%;
+    height: 460px;
+    display: block;
+    border: none;
+}
+
+#patent-figures-window .pdf-viewer {
+    height: 300px;
+}
+
+#files-window {
+    text-align: left;
+    width: 26vw;
+    position: absolute;
+    z-index: 10000;
+    left: 40vw;
+    top: 8vw;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+#folder-contents-window {
+    text-align: left;
+    width: 26vw;
+    position: absolute;
+    z-index: 10001;
+    left: 68vw;
+    top: 8vw;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+#college-window {
+    text-align: left;
+    width: 26vw;
+    position: absolute;
+    z-index: 10000;
+    left: 8vw;
+    top: 20vw;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+#letter-of-intent-window {
+    width: 30vw;
+    position: absolute;
+    z-index: 10000;
+    left: 34vw;
+    top: 18vw;
+    display: none;
+}
+
+#phd-acceptance-window {
+    width: 30vw;
+    position: absolute;
+    z-index: 10000;
+    left: 40vw;
+    top: 24vw;
+    display: none;
+}
+
+/* ===== Free ideas ==========================================================
+   A Notepad: the window is nothing but its text area, so the wrapper carries
+   only enough padding to read as a frame around a sunken field. */
+#notepad-window {
+    text-align: left;
+    width: 34vw;
+    max-width: 520px;
+    min-width: 280px;
+    position: absolute;
+    left: 26vw;
+    top: 18vh;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+.notepad-inner {
+    padding: 4px;
+    box-sizing: border-box;
+}
+
+/* Monospace, like the real Notepad - and like `main`, which already uses
+   Courier here. The dialogs use Tahoma for prose, but this is a text editor
+   and typing into a proportional face reads wrong.
+   resize:none because the corner grip would fight the window's own chrome;
+   the maximise button is how this gets bigger. */
+/* Says whether this copy can be edited and whether the last keystroke made it
+   to disk. A notepad that silently stops saving is worse than one that can't
+   save at all. */
+/* Status on the left, Publish on the right - the status is what tells you
+   whether pressing it would do anything. */
+.notepad-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#notepad-publish {
+    flex: 0 0 auto;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+    min-width: 84px;
+    padding: 4px 12px;
+    background: #d8d8d8;
+    border: 2px outset #f0f0f0;
+    border-radius: 0;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+#notepad-publish:active {
+    border-style: inset;
+}
+#notepad-publish[disabled] {
+    color: #808080;
+    border-style: outset;
+    cursor: url('cursor2-arrow.png') 0 0, default;
+}
+
+.notepad-status {
+    min-height: 15px;
+    padding: 4px 3px 1px;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 11px;
+    color: #666;
+}
+.notepad-status.is-error {
+    color: #a00000;
+}
+
+body.dark-mode .notepad-status {
+    color: #444;
+}
+
+/* Read-only copies get the page's own grey, so it looks inert rather than
+   like an editable field that just isn't responding */
+.notepad-inner textarea[readonly] {
+    background: #ececec;
+    color: #333;
+}
+
+.notepad-inner textarea {
+    display: block;
+    width: 100%;
+    height: 260px;
+    box-sizing: border-box;
+    resize: none;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 6px 7px;
+    background: #fff;
+    color: #000;
+    border: 2px inset #d8d8d8;
+    border-radius: 0;
+    outline: none;
+}
+
+/* ===== Purrr ===============================================================
+   A Win95 message box: grey body rather than the white the content windows
+   use, icon beside the question, two equal buttons under it. */
+#cat-window {
+    text-align: left;
+    width: 30vw;
+    max-width: 430px;
+    min-width: 265px;
+    position: absolute;
+    /* High and right of centre, so it clears the converter - which centres
+       itself on open, and opens on arrival too. top is in vh rather than vw
+       deliberately: the original 27vw put this below the taskbar on any window
+       that was wide and short, because a vertical offset measured against
+       width has nothing to do with how much height is available. */
+    left: 44vw;
+    top: 9vh;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+/* Padding matches .converter-inner. No background of its own: it inherits the
+   white from .popup-inner-wrapper, and the grey in dark mode, so it changes
+   with every other window instead of staying its own colour. */
+.cat-inner {
+    padding: 20px 18px;
+    box-sizing: border-box;
+}
+
+.cat-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+/* 56px and the same margin as the password and converter icons. Out-specifies
+   `.popup-window .popup-inner-wrapper img`, which stretches window images to
+   100% - right for the content windows, wrong for a dialog sprite. */
+#cat-window .popup-inner-wrapper img.cat-icon {
+    width: 56px;
+    flex: 0 0 auto;
+    margin-top: 2px;
+    image-rendering: pixelated;
+}
+
+/* Tahoma at 14px, like .converter-message and .password-message. The pixel
+   face is for the desktop chrome - taskbar, tray, icon labels - not for text
+   inside a window. */
+.cat-message {
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+.cat-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 22px;
+}
+
+/* Same button as .converter-buttons and .password-buttons. flex 1 1 0 so the
+   pair splits the width evenly however long the labels are - "Yes" and
+   "Yes, I do" are very different lengths and shouldn't show it. */
+.cat-buttons button {
+    flex: 1 1 0;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 14px;
+    min-width: 96px;
+    padding: 5px 12px;
+    background: #d8d8d8;
+    border: 2px outset #f0f0f0;
+    border-radius: 0;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+.cat-buttons button:active {
+    border-style: inset;
+}
+
+/* ===== Google search =======================================================
+   A small dialog rather than a content window: field on top, one button under
+   it. Set in W95FA, the same pixel face the taskbar uses, so it reads as part
+   of the desktop rather than as a web form dropped into it. */
+#google-window {
+    text-align: left;
+    width: 30vw;
+    max-width: 420px;
+    min-width: 250px;
+    position: absolute;
+    left: 35vw;
+    top: 15vw;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+.google-inner {
+    padding: 16px 16px 18px;
+    box-sizing: border-box;
+}
+
+/* Out-specifies `.popup-window .popup-inner-wrapper img` territory the same
+   way the dialog icons do - here it's just making the field fill the window
+   rather than sit at its default text-input width. */
+.google-inner input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: 'W95FA', Tahoma, Geneva, sans-serif;
+    font-size: 16px;
+    padding: 5px 7px;
+    background: #fff;
+    border: 2px inset #d8d8d8;
+    border-radius: 0;
+}
+
+.google-buttons {
+    margin-top: 14px;
+    text-align: center;
+}
+
+.google-buttons button {
+    font-family: 'W95FA', Tahoma, Geneva, sans-serif;
+    font-size: 15px;
+    min-width: 108px;
+    padding: 5px 14px;
+    background: #d8d8d8;
+    border: 2px outset #f0f0f0;
+    border-radius: 0;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+.google-buttons button:active {
+    border-style: inset;
+}
+
+#dino-window {
+    text-align: left;
+    width: 46vw;
+    position: absolute;
+    z-index: 10000;
+    left: 27vw;
+    top: 9vw;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+.dino-viewer {
+    width: 100%;
+    height: 340px;
+    border: 0;
+    display: block;
+    background: #fff;
+}
+
+#shop-window {
+    text-align: left;
+    width: 56vw;
+    min-width: 320px;
+    max-width: 920px;
+    position: absolute;
+    z-index: 10000;
+    left: 22vw;
+    top: 6vw;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+.shop-viewer {
+    width: 100%;
+    height: 640px;
+    max-height: 80vh;
+    border: 0;
+    display: block;
+    background: #fff;
+}
+
+/* The print's soft, shaded illustration reads as noisy when pixelated -
+   unlike the pixel-art icons the default rule was written for */
+#shop-window .window-title-icon {
+    image-rendering: auto;
+}
+
+#arcade-window {
+    text-align: left;
+    width: 30vw;
+    min-width: 300px;
+    position: absolute;
+    z-index: 10000;
+    left: 14vw;
+    top: 6vw;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+/* Each game window takes its game's own shape: --game-w/--game-h are set per
+   window from arcadeGames in main.js. The width is the smallest of the game's
+   size, the screen width, and whatever width keeps the frame's height inside
+   the screen (less room for the header, title bar and taskbar), and the frame
+   follows with aspect-ratio - so a window that has to shrink keeps its shape
+   instead of cropping or letterboxing the game.
+   left/top are set per window when it opens, cascading so two don't stack
+   exactly. */
+.game-window {
+    text-align: left;
+    width: min(calc(var(--game-w) * 1px), 94vw,
+               calc((100vh - 130px) * var(--game-w) / var(--game-h)));
+    position: absolute;
+    z-index: 10000;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+.game-viewer {
+    width: 100%;
+    height: auto;
+    aspect-ratio: var(--game-w) / var(--game-h);
+    border: 0;
+    display: block;
+    background: #000;
+}
+
+/* Application icons in a folder grid - the arcade's joystick. Between the
+   48px folder and 30px file sizes, since the art fills its own canvas. */
+.file-item img.app-type-icon {
+    width: 40px;
+    image-rendering: pixelated;
+}
+
+/* Arcade icons named arcade-art-*.png are painted art or photos, not pixel
+   art - nearest-neighbour scaling, right for the joystick, surfer and monkey,
+   turns their soft edges jagged. Matched in each place an icon appears -
+   folder, title bar, taskbar - each selector out-ranking that place's own
+   pixelated rule. */
+.file-item img.app-type-icon[src^="arcade-art-"],
+.window-title-icon[src^="arcade-art-"],
+.task-button img[src^="arcade-art-"] {
+    image-rendering: auto;
+}
+
+#random-window {
+    text-align: left;
+    width: 26vw;
+    position: absolute;
+    z-index: 10000;
+    left: 12vw;
+    top: 8vw;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+#settings-window {
+    text-align: left;
+    width: 52vw;
+    position: absolute;
+    z-index: 10002;
+    left: 24vw;
+    top: 8vw;
+    border: 4px ridge #d8d8d8;
+    display: none;
+}
+
+.settings-inner {
+    padding: 14px;
+    font-family: Tahoma, Geneva, sans-serif;
+    max-height: 80vh;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 24px;
+    align-items: start;
+}
+
+.settings-section {
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #ccc;
+}
+
+.settings-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.settings-section-title {
+    font-weight: bold;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #334ea5;
+    margin-bottom: 10px;
+}
+
+.settings-row {
+    margin-bottom: 14px;
+}
+
+.settings-row:last-child {
+    margin-bottom: 0;
+}
+
+.settings-label {
+    font-weight: bold;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: #000;
+}
+
+.settings-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #000;
+    margin-right: 14px;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+
+.settings-button {
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 12px;
+    padding: 4px 10px;
+    border: 1px outset #dad7d2;
+    background: #d8d8d8;
+    color: #000;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+
+.settings-button:active {
+    border-style: inset;
+}
+
+.files-inner {
+    padding: 14px;
+}
+
+.files-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+}
+
+.file-item {
+    width: 64px;
+    text-align: center;
+    font-family: 'W95FA', sans-serif;
+    font-size: 12px;
+    color: #000;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+
+.file-item img {
+    width: 48px;
+    height: auto;
+    display: block;
+    margin: 0 auto 4px;
+    -webkit-user-drag: none;
+    user-drag: none;
+    user-select: none;
+}
+
+.file-item img.file-type-icon {
+    width: 30px;
+}
+
+.file-item img.back-icon {
+    width: 38px;
+    margin-bottom: 11px; /* tomato.gif shrunk down, compensate to keep "back" label aligned with file labels */
+}
+
+
+
+
+
+
+
+
+@media screen and (max-width: 960px) {
+
+/* Two mobile treatments, switchable with ?mobile=stacked / ?mobile=fullscreen
+   so they can be compared on a real phone. See MOBILE_TREATMENT in main.js. */
+
+/* Deliberately NOT setting `scroll-behavior: smooth` here. It reroutes
+   scrollWindowIntoView's scrollTo through the browser's animation pipeline,
+   which means the scroll silently does nothing wherever animation frames are
+   throttled - exactly the case the instant scroll is there to survive. An
+   abrupt jump that always happens beats a glide that sometimes doesn't. */
+
+/* --- stacked: the icon column stays as the "desktop" and windows stack
+       underneath it, full width, in the order they were opened --- */
+body.mobile-stacked .popup-window {
+    position: static !important;
+    width: calc(100% - 20px) !important;
+    margin: 0 10px 16px !important;
+}
+/* Flex column purely so windows can be ordered by when they were opened
+   rather than by their position in the HTML - see stackedOrder in main.js.
+   Reordering via `order` rather than moving nodes matters: several windows
+   hold PDF iframes, and moving an iframe in the DOM reloads it. */
+body.mobile-stacked main {
+    display: flex;
+    flex-direction: column;
+}
+/* Where the first window lands. Deliberately short of clearing the icon
+   column (which bottoms out around 668px in document coords, with <main>
+   starting at 136px) so the window rides up over the lower icons and is
+   fully on screen without the page having to scroll to meet it.
+   Only applied while something is open, so an untouched page keeps the
+   whole desktop to itself. */
+body.mobile-stacked.has-open-window main {
+    padding-top: 335px;
+    padding-bottom: 24px;
+}
+/* The footer is position:fixed, so on a phone it permanently eats ~50px off
+   the bottom of the screen and clips whatever window is lowest. There's no
+   room to spare here - let it sit at the end of the content instead.
+
+   Dropping it to `position: static` alone isn't enough though: with nothing
+   open the page is far shorter than the viewport, so the taskbar flows right
+   after <main> and ends up floating partway up the screen. Making <body> a
+   flex column and handing the footer `margin-top: auto` covers both cases -
+   the auto margin swallows the leftover space and holds the bar against the
+   bottom while the page is short, then collapses to nothing once the stacked
+   windows outgrow the viewport and the footer trails the content as intended. */
+body.mobile-stacked {
+    display: flex;
+    flex-direction: column;
+}
+/* Flex items default to flex-shrink:1; without this the icon column and the
+   stacked windows would get squeezed instead of scrolling. */
+body.mobile-stacked > header,
+body.mobile-stacked > main {
+    flex-shrink: 0;
+}
+body.mobile-stacked footer {
+    position: static;
+    margin-top: auto;
+}
+
+/* --- fullscreen: one window at a time, covering the viewport, title bar
+       pinned so the close button is always reachable --- */
+body.mobile-fullscreen .popup-window {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-width: 0 !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+body.mobile-fullscreen .popup-window .windows-header-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+/* The inner wrapper is only as tall as its content, so without this the
+   desktop shows through below short content even though the window element
+   itself fills the viewport. Mirrors .popup-inner-wrapper's own colors. */
+body.mobile-fullscreen .popup-window {
+    background-color: #fff;
+}
+body.dark-mode.mobile-fullscreen .popup-window {
+    background-color: #d3d3d3;
+}
+/* iconize/resize are desktop window gestures - they have no meaning when the
+   window already fills the screen, and iconize would hide all the content */
+body.mobile-fullscreen .popup-window.iconize .popup-inner-wrapper {
+    display: block;
+}
+
+.window-title {
+    font-size: 13px;
+    line-height: 16px;
+}
+.window-icons img {
+    height: 13px;
+    margin-top: 0.1vw;
+    vertical-align: middle;
+}
+.window-icons .win-btn {
+    height: 18px;
+    min-width: 18px;
+    font-size: 13px;
+    font-weight: bold;
+    margin-top: 0.1vw;
+    margin-left: 1px;
+    vertical-align: middle;
+}
+.win-btn .glyph-min {
+    margin-bottom: 2px;
+}
+
+}
+
+@media screen and (max-width: 600px) {
+    #about-me, #projects {
+        width: 90vw; /* Wider on small screens */
+    }
+}
+
+
+
+/* ===== Taskbar =============================================================
+   The footer is a Win95 taskbar: a raised bar carrying a button per open
+   window plus the page's own permanently-pressed button, and a sunken tray
+   on the right. */
+.taskbar {
+    display: flex;
+    align-items: stretch;
+    gap: 5px;
+    padding: 3px 4px;
+    border-top: 2px solid #fff;   /* the raised lip along the top edge */
+    box-sizing: border-box;
+}
+
+.taskbar-tasks {
+    display: flex;
+    gap: 3px;
+    flex: 1 1 auto;
+    min-width: 0;      /* lets the buttons shrink instead of overflowing */
+    overflow: hidden;
+}
+
+.task-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 200px;
+    padding: 3px 8px;
+    font-family: 'W95FA', Tahoma, Geneva, sans-serif;
+    font-size: 12px;
+    line-height: 16px;
+    text-align: left;
+    color: #000;
+    background: #c0c0c0;
+    border: 2px outset #f0f0f0;
+    border-radius: 0;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+.task-button:active {
+    border-style: inset;
+}
+.task-button span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.task-button img {
+    height: 15px;
+    width: auto;
+    flex: 0 0 auto;
+    image-rendering: pixelated;
+}
+
+/* The pressed task - the page you're actually on */
+.task-button-active {
+    border-style: inset;
+    font-weight: bold;
+}
+
+/* A window that's been minimised still has a task, just not a pressed one */
+.task-button-window.is-minimised {
+    font-weight: normal;
+}
+.task-button-window {
+    font-weight: bold;
+}
+
+.taskbar-tray {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: stretch;
+    /* Padding lives on .tray-button, not here, so the button covers the whole
+       inside of the sunken box and every part of the tray is clickable. */
+    border: 2px inset #f0f0f0;
+    font-family: 'W95FA', Tahoma, Geneva, sans-serif;
+    font-size: 12px;
+    line-height: 18px;
+    color: #000;
+}
+.tray-icon {
+    height: 14px;
+    width: auto;
+    image-rendering: pixelated;
+}
+
+/* The whole tray opens the world clocks, so the button - not the clock text -
+   is the control. It has to keep reading as plain tray contents though: no
+   chrome at rest, a light wash on hover, and a pressed fill while it's open. */
+.tray-button {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 2px 9px;
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: inherit;
+}
+.tray-button:hover {
+    background: #d4d4d4;
+}
+.tray-button[aria-expanded="true"] {
+    background: #b0b0b0;
+}
+
+/* ===== World clocks ========================================================
+   A tray flyout in the Win95 idiom: raised panel, sunken rows. It rises out
+   of the taskbar instead of dropping from it - bottom:100% pins it to the top
+   edge of the tray, so it follows the bar whether the footer is fixed
+   (desktop) or static (the stacked mobile layout) with no JS positioning.
+   Right-aligned to the tray so it never runs off the screen edge. */
+.taskbar-tray {
+    position: relative;
+}
+.clock-flyout {
+    position: absolute;
+    bottom: 100%;
+    right: -2px;
+    margin-bottom: 3px;
+    padding: 3px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    background: #c0c0c0;
+    border: 2px outset #f0f0f0;
+    z-index: 5;
+}
+.clock-flyout[hidden] {
+    display: none;
+}
+.clock-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 6px 2px 4px;
+    background: #000080;
+    border: 2px inset #f0f0f0;
+}
+.clock-flag {
+    flex: 0 0 auto;
+    display: block;
+    border: 1px solid #000;
+    image-rendering: pixelated;
+}
+.clock-time {
+    flex: 1 1 auto;
+    text-align: right;
+    /* Tabular so the rows don't jitter as the digits change. */
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    line-height: 16px;
+    letter-spacing: 1px;
+    color: #fff;
+    white-space: nowrap;
+}
+
+/* While the flyout is up the taskbar has to clear the windows, which sit at
+   z-index 10000+. Scoped to the open state so the normal stacking - windows
+   over the bar - is untouched the rest of the time. */
+body.clock-open footer {
+    z-index: 30000;
+}
+
+@media screen and (max-width: 600px) {
+    /* No room for window titles next to a clock on a phone - keep the tray */
+    .task-button {
+        max-width: 130px;
+    }
+    .taskbar-tray .tray-icon {
+        display: none;
+    }
+}
+
+/* ===== Password gate =======================================================
+   Modelled on the Win95 "Enter Network Password" dialog: icon on the left,
+   message and field in the middle, OK/Cancel stacked at the right. Reuses the
+   existing .popup-window chrome so it matches the rest of the site. */
+
+/* html.gated is set by the inline script in index.html's <head>, before any
+   paint, so the site never flashes into view behind the dialog */
+html.gated body > main,
+html.gated body > footer {
+    display: none;
+}
+
+/* The header stays up while the gate is showing, so "mocial" still types
+   itself in above the dialog. Raised above the overlay, which would cover it
+   otherwise, and forced to the gate's teal - the header's own background is
+   #008080 already, but body.dark-mode paints it black, which reads as a band
+   sitting on the gate rather than part of it. The nav is separately hidden by
+   body.header-hidden, so no links into the site are exposed. */
+html.gated body > header,
+html.gated body.dark-mode > header {
+    z-index: 100001;
+    background: #008080;
+}
+
+#password-gate {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100000;
+    background: #008080;   /* the classic desktop teal */
+    padding: 20px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+}
+html.gated #password-gate {
+    display: flex;
+}
+
+#password-dialog {
+    position: static;
+    width: 100%;
+    max-width: 560px;
+    text-align: left;
+}
+
+.password-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 20px 18px;
+    box-sizing: border-box;
+}
+
+/* Selector has to out-specify `.popup-window .popup-inner-wrapper img`, which
+   stretches window images to 100% - correct for the content windows, very
+   wrong for a 56px dialog icon */
+#password-dialog .popup-inner-wrapper img.password-icon {
+    width: 56px;
+    flex: 0 0 auto;
+    margin-top: 2px;
+}
+
+.password-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.password-message {
+    font-size: 14px;
+    margin-bottom: 22px;
+}
+
+.password-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.password-row label {
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.password-row input {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 14px;
+    padding: 3px 4px;
+    background: #fff;
+    border: 2px inset #d8d8d8;
+    border-radius: 0;
+}
+
+.password-error {
+    min-height: 16px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #a00000;
+}
+
+.password-buttons {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.password-buttons button {
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 14px;
+    min-width: 96px;
+    padding: 5px 12px;
+    background: #d8d8d8;
+    border: 2px outset #f0f0f0;
+    border-radius: 0;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+.password-buttons button:active {
+    border-style: inset;
+}
+
+/* Stack the buttons under the field once there's no room beside it */
+@media screen and (max-width: 600px) {
+    .password-inner {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .password-buttons {
+        flex-direction: row;
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+/* ===== YouTube converter ===================================================
+   Deliberately the password dialog's layout: icon left, message and field in
+   the middle, buttons stacked at the right. The three panes (form, progress,
+   finished) swap inside the same body so the window never changes shape
+   underneath you. */
+
+#converter-window {
+    display: none;
+    width: 100%;
+    max-width: 560px;
+    text-align: left;
+}
+
+.converter-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 20px 18px;
+    box-sizing: border-box;
+}
+
+/* Same fight the password icon has to pick: `.popup-window
+   .popup-inner-wrapper img` stretches window images to 100%, which is right
+   for the content windows and very wrong for a 56px dialog icon */
+#converter-window .popup-inner-wrapper img.converter-icon {
+    width: 56px;
+    flex: 0 0 auto;
+    margin-top: 2px;
+}
+
+.converter-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.converter-message {
+    font-size: 14px;
+    margin-bottom: 22px;
+}
+
+.converter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.converter-row + .converter-row {
+    margin-top: 10px;
+}
+
+.converter-row label {
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.converter-row input {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 14px;
+    padding: 3px 4px;
+    background: #fff;
+    border: 2px inset #d8d8d8;
+    border-radius: 0;
+}
+
+.converter-row select {
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+    padding: 2px 3px;
+    background: #fff;
+    border: 2px inset #d8d8d8;
+    border-radius: 0;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+
+/* The format buttons sit under the link field and are the dialog's action -
+   there's no separate Convert step, clicking a format starts the job. */
+/* Stacked in the right-hand column, matching the gap the Convert/Cancel pair
+   used - the format buttons take that pair's place on the form. */
+.converter-formats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* The flyout anchors to this, so it tracks its own button rather than the
+   dialog - the same reason .taskbar-tray is positioned. */
+.converter-format-wrapper {
+    position: relative;
+    display: flex;
+}
+
+.converter-format-button {
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 14px;
+    /* Matches .converter-buttons button, so the column keeps one width
+       whichever pane is showing and the dialog doesn't resize under you */
+    min-width: 96px;
+    padding: 5px 12px;
+    background: #d8d8d8;
+    border: 2px outset #f0f0f0;
+    border-radius: 0;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+/* Held in while its options are showing, the way the tray button stays
+   pressed while the clocks are up */
+.converter-format-button:active,
+.converter-format-button[aria-expanded="true"] {
+    border-style: inset;
+}
+
+/* Lifted wholesale from the world-clock tray: raised panel, sunken navy rows,
+   rising off the top edge of its button instead of dropping below it. Same
+   Win95 idiom, so the two read as the same control in two places. */
+.converter-flyout {
+    position: absolute;
+    bottom: 100%;
+    /* Anchored right, not left: these buttons sit against the dialog's right
+       edge, so a flyout growing rightward would hang off it. Opens inward
+       instead - the same reason the tray's clock flyout is right-aligned. */
+    right: 0;
+    margin-bottom: 3px;
+    padding: 3px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    background: #c0c0c0;
+    border: 2px outset #f0f0f0;
+    z-index: 5;
+}
+.converter-flyout[hidden] {
+    display: none;
+}
+
+.converter-flyout-row {
+    display: block;
+    width: 100%;
+    padding: 3px 12px;
+    background: #000080;
+    border: 2px inset #f0f0f0;
+    font-family: 'W95FA', Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+    line-height: 16px;
+    letter-spacing: 1px;
+    color: #fff;
+    text-align: left;
+    white-space: nowrap;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+.converter-flyout-row:hover {
+    background: #1084d0;
+}
+
+.converter-error {
+    min-height: 16px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #a00000;
+}
+
+/* Win95 drew a progress bar as a row of discrete chunks with gaps, not a
+   solid fill - hence the repeating gradient rather than a background colour.
+   The stops are in px so the chunks stay the same size as the bar fills. */
+/* Win95 drew a progress bar as discrete chunks, so these are discrete
+   elements rather than a gradient behind a sliding width. The gradient version
+   sized its chunks in px, which meant whether the last one fitted was an
+   accident of the bar's width - it usually got clipped part-way through. flex
+   divides the row exactly instead, so a whole number of blocks fills the bar
+   at any size. */
+.converter-bar {
+    height: 26px;
+    background: #fff;
+    border: 2px inset #d8d8d8;
+    padding: 3px;
+    box-sizing: border-box;
+    display: flex;
+    gap: 3px;
+    overflow: hidden;
+}
+
+.converter-block {
+    /* 1 1 0, not 1 1 auto: every block gets an identical share of the row
+       rather than a share of what's left over after content */
+    flex: 1 1 0;
+    background: #000080;
+    /* hidden, not display:none - the slot stays allocated, so lighting a block
+       never reflows the ones beside it */
+    visibility: hidden;
+}
+
+/* No transition anywhere here on purpose: a block is on or it isn't, and it
+   appears whole the instant its share of the file is done. */
+.converter-block.is-on {
+    visibility: visible;
+}
+
+.converter-substatus {
+    min-height: 16px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #444;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.dark-mode .converter-substatus {
+    color: #333;
+}
+
+.converter-buttons {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    /* Centred against the body rather than top-aligned with it. The column is
+       shorter than the message-plus-field beside it, so flex-start dumped the
+       whole difference underneath as dead space. This splits it evenly above
+       and below, and holds as the body changes height between panes. */
+    align-self: center;
+}
+
+.converter-buttons button {
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 14px;
+    min-width: 96px;
+    padding: 5px 12px;
+    background: #d8d8d8;
+    border: 2px outset #f0f0f0;
+    border-radius: 0;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+.converter-buttons button:active {
+    border-style: inset;
+}
+.converter-buttons button[disabled] {
+    color: #808080;
+    border-style: outset;
+    cursor: url('cursor2-arrow.png') 0 0, default;
+}
+
+/* Stack the buttons under the field once there's no room beside it - same
+   breakpoint the password dialog uses */
+@media screen and (max-width: 600px) {
+    .converter-inner {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .converter-buttons {
+        flex-direction: row;
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+.pill-postmodern {
+    border-radius: 5vw;
+    border: 1px solid #f00;
+    color: #f00;
+    font-size: 13px;
+    line-height: 20px;
+    display: inline-block;
+    padding: 0 5px;
+}
+.pill-postmodern:hover {
+    color: #f00;
+}

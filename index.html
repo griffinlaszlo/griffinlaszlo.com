@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://fonts.cdnfonts.com/css/w95fa" rel="stylesheet">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>griffinland</title>
+
+    <!-- ==== PASSWORD GATE =========================================
+         Same doorman as mocial.org, with the same password: the hash
+         below matches mocial's SITE_PASSWORD_HASH. Change both
+         together, or crossing between the sites stops carrying the
+         unlock over.
+
+         Crossing over: an unlocked visitor arrives from mocial with
+         #pass=<hash> on the URL, which unlocks this tab too and is
+         then wiped from the address bar. Anyone could type it - but
+         the hash is already in this file for anyone who views the
+         source, so it gives away nothing the page didn't. Like
+         mocial's gate, this keeps casual visitors out while the site
+         is built; it doesn't protect anything secret.
+         ========================================================== -->
+    <script>
+        window.REQUIRE_PASSWORD = true;
+        window.SITE_PASSWORD_HASH = "1bb5a76c";   // must match mocial's
+
+        window.FORCE_LOCK = location.search.indexOf("lock") !== -1;
+        if (window.FORCE_LOCK) sessionStorage.removeItem("griffinland-unlocked");
+
+        if (location.hash === "#pass=" + window.SITE_PASSWORD_HASH) {
+            sessionStorage.setItem("griffinland-unlocked", "1");
+            history.replaceState({}, "", location.pathname + location.search);
+        }
+
+        window.IS_LOCAL = location.hostname === "localhost" ||
+                          location.hostname === "127.0.0.1" ||
+                          location.protocol === "file:";
+
+        if ((window.REQUIRE_PASSWORD || window.FORCE_LOCK) &&
+            !(window.IS_LOCAL && !window.FORCE_LOCK) &&
+            sessionStorage.getItem("griffinland-unlocked") !== "1") {
+            document.documentElement.className += " gated";
+        }
+    </script>
+
+    <link rel="stylesheet" href="main.css?v=1">
+    <link rel="stylesheet" href="griffinland.css?v=1">
+    <!-- Jquery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+</head>
+<body class="footer-dark header-hidden">
+
+    <header>
+        <h1 id="title"></h1>
+    </header>
+    <main>
+        <div id="computer-icon-group" class="desktop-icon-group">
+            <img src="computer-icon.png" id="computer-icon" alt="Computer Icon" draggable="false">
+            <div id="computer-icon-label"><a href="#">home</a></div>
+        </div>
+        <!-- Back to mocial.org - sits where griffinland's icon sits on mocial -->
+        <div id="mocial-icon-group" class="desktop-icon-group">
+            <img src="music_note_spinning.gif" id="mocial-icon" alt="Mocial Icon" draggable="false">
+            <div id="mocial-icon-label"><a href="#">mocial</a></div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="taskbar">
+            <div class="taskbar-tasks" id="taskbar-tasks">
+                <button type="button" class="task-button task-button-active" id="task-button-home">
+                    <img src="world_spinning.gif" alt="" draggable="false"><span>© 2025 griffinlaszlo.com</span>
+                </button>
+            </div>
+            <div class="taskbar-tray">
+                <button type="button" class="tray-button" id="tray-button" aria-expanded="false" aria-controls="clock-flyout" title="World clocks">
+                    <img src="speaker.png" alt="" class="tray-icon" draggable="false">
+                    <span class="tray-clock" id="tray-clock"></span>
+                </button>
+
+                <div class="clock-flyout" id="clock-flyout" hidden>
+                    <div class="clock-row">
+                        <svg class="clock-flag" viewBox="0 0 16 11" width="16" height="11" shape-rendering="crispEdges" aria-hidden="true">
+                            <rect width="16" height="11" fill="#fff"/>
+                            <g fill="#b22234"><rect y="0" width="16" height="1.57"/><rect y="3.14" width="16" height="1.57"/><rect y="6.28" width="16" height="1.57"/><rect y="9.42" width="16" height="1.57"/></g>
+                            <rect width="7" height="6.28" fill="#3c3b6e"/>
+                            <g fill="#fff"><rect x="1" y="1" width="1" height="1"/><rect x="3" y="1" width="1" height="1"/><rect x="5" y="1" width="1" height="1"/><rect x="2" y="3" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="1" y="4.6" width="1" height="1"/><rect x="3" y="4.6" width="1" height="1"/><rect x="5" y="4.6" width="1" height="1"/></g>
+                        </svg>
+                        <span class="clock-time" id="clock-us">--:-- --</span>
+                    </div>
+                    <div class="clock-row">
+                        <svg class="clock-flag" viewBox="0 0 16 11" width="16" height="11" shape-rendering="crispEdges" aria-hidden="true">
+                            <rect width="16" height="11" fill="#012169"/>
+                            <path d="M0,0 L16,11 M16,0 L0,11" stroke="#fff" stroke-width="2.4"/>
+                            <path d="M0,0 L16,11 M16,0 L0,11" stroke="#c8102e" stroke-width="1.2"/>
+                            <path d="M8,0 L8,11 M0,5.5 L16,5.5" stroke="#fff" stroke-width="3.6"/>
+                            <path d="M8,0 L8,11 M0,5.5 L16,5.5" stroke="#c8102e" stroke-width="2"/>
+                        </svg>
+                        <span class="clock-time" id="clock-uk">--:-- --</span>
+                    </div>
+                    <div class="clock-row">
+                        <svg class="clock-flag" viewBox="0 0 16 11" width="16" height="11" shape-rendering="crispEdges" aria-hidden="true">
+                            <rect width="16" height="3.67" fill="#000"/>
+                            <rect y="3.67" width="16" height="3.67" fill="#dd0000"/>
+                            <rect y="7.34" width="16" height="3.66" fill="#ffce00"/>
+                        </svg>
+                        <span class="clock-time" id="clock-de">--:-- --</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div id="password-gate">
+        <div id="password-dialog" class="popup-window">
+            <div class="windows-header-wrapper clearafter">
+                <div class="window-title">ENTER NETWORK PASSWORD</div>
+                <div class="window-icons"><span class="win-btn">?</span><span class="win-btn">&#10005;</span></div>
+            </div>
+
+            <div class="popup-inner-wrapper password-inner">
+                <img src="world_spinning.gif" class="password-icon" alt="" draggable="false">
+
+                <div class="password-body">
+                    <div class="password-message">Enter your network password for griffinland.</div>
+                    <div class="password-row">
+                        <label for="site-password">Password:</label>
+                        <input type="password" id="site-password" autocomplete="current-password" spellcheck="false">
+                    </div>
+                    <div class="password-error" id="password-error"></div>
+                </div>
+
+                <div class="password-buttons">
+                    <button type="button" id="password-ok">OK</button>
+                    <button type="button" id="password-cancel">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="main.js?v=1"></script>
+
+</body>
+</html>

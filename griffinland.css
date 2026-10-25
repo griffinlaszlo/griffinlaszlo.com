@@ -1,0 +1,39 @@
+/* griffinland's own desktop. main.css is mocial's stylesheet copied as-is,
+   so windows, the taskbar and the fonts match; everything here belongs to
+   this desktop alone. */
+
+/* Back to mocial: second column at griffinland's spot on mocial (181px,
+   right 81px), so the two icons trade you back and forth from one place */
+#mocial-icon-group {
+    top: 181px;
+    right: 81px;
+}
+
+/* 64x81 pixel-art gif - sized by height to sit level with the 44px icons */
+#mocial-icon {
+    -webkit-user-drag: none;
+    user-drag: none;
+    user-select: none;
+    position: absolute;
+    top: 0;
+    right: 31px; /* centers the ~38px-wide icon within the 100px group */
+    height: 48px;
+    width: auto;
+    image-rendering: pixelated;
+}
+
+#mocial-icon-label {
+    position: absolute;
+    right: 0;
+    width: 100px;
+    text-align: center;
+    font-family: 'W95FA', sans-serif;
+    font-size: 13px;
+    line-height: 1.2;
+    top: 52px;
+}
+
+#mocial-icon-label a {
+    color: #fff;
+    text-decoration: none;
+}
