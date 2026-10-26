@@ -11,7 +11,7 @@ tray clock and fonts are mocial's, and only the desktop changes.
 | File | Where it comes from |
 |---|---|
 | `main.css` | mocial's stylesheet, copied as-is. Rules for mocial's own windows come along unused. |
-| `main.js` | mocial's shell, lifted word for word: icon dragging, the password gate, window fly-in/out, the taskbar, the world-clock tray, `buildWindowChrome`, the typed title. |
+| `main.js` | mocial's shell, lifted word for word: icon dragging, the password gate, window fly-in/out, the taskbar, the world-clock tray, `buildWindowChrome`, the typed title. Comments starting `griffinland:` mark what's its own (the hangman, and the gate's two windows being left off the taskbar) - keep those when copying the shell over again. |
 | `griffinland.css` | Styles for griffinland's own desktop. Anything new goes here, not in `main.css`. |
 
 Because these are copies, a fix to the shell on mocial has to be copied here
@@ -33,14 +33,18 @@ python3 -m http.server 8900
 Then open `http://localhost:8900`. The password gate is skipped on localhost;
 add `?lock` to see it.
 
-## Password gate
+## Password gate and hangman
 
-Same doorman and same password as mocial: `SITE_PASSWORD_HASH` in
-`index.html` must match mocial's. Crossing between the sites, an unlocked
-visitor carries `#pass=<hash>` on the URL so they aren't asked twice; it's
-wiped from the address bar on arrival. The hash is readable in the page source
-anyway, so this gives nothing away - like mocial's, the gate keeps casual
-visitors out while the site is built and protects nothing secret.
+Same doorman as mocial, with griffinland's own password: `SITE_PASSWORD_HASH`
+in `index.html` is the hash of it. Beside the dialog, a hangman window lets
+visitors guess it - the word is the password, and winning fills it into the
+dialog so they only have to hit OK. Changing the password means changing both
+the hash and `WORD` in main.js's hangman section (`hashPassword("...")` in the
+console gives the new hash).
+
+Since the game gives the password to anyone who plays, the gate is a toy, not
+a lock, and the two sites no longer carry an unlock across to each other:
+mocial asks for its own password.
 
 ## Deploying
 

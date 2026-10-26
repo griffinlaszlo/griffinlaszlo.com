@@ -8,30 +8,18 @@
     <title>griffinland</title>
 
     <!-- ==== PASSWORD GATE =========================================
-         Same doorman as mocial.org, with the same password: the hash
-         below matches mocial's SITE_PASSWORD_HASH. Change both
-         together, or crossing between the sites stops carrying the
-         unlock over.
-
-         Crossing over: an unlocked visitor arrives from mocial with
-         #pass=<hash> on the URL, which unlocks this tab too and is
-         then wiped from the address bar. Anyone could type it - but
-         the hash is already in this file for anyone who views the
-         source, so it gives away nothing the page didn't. Like
-         mocial's gate, this keeps casual visitors out while the site
-         is built; it doesn't protect anything secret.
+         Same doorman as mocial.org, but griffinland has its own
+         password, and the hangman window beside the dialog lets
+         visitors guess it. The game spells the password out, so this
+         gate is a toy, not a lock - and since anyone can win their way
+         in, nothing carries an unlock across to mocial or back.
          ========================================================== -->
     <script>
         window.REQUIRE_PASSWORD = true;
-        window.SITE_PASSWORD_HASH = "1bb5a76c";   // must match mocial's
+        window.SITE_PASSWORD_HASH = "f715b2b9";
 
         window.FORCE_LOCK = location.search.indexOf("lock") !== -1;
         if (window.FORCE_LOCK) sessionStorage.removeItem("griffinland-unlocked");
-
-        if (location.hash === "#pass=" + window.SITE_PASSWORD_HASH) {
-            sessionStorage.setItem("griffinland-unlocked", "1");
-            history.replaceState({}, "", location.pathname + location.search);
-        }
 
         window.IS_LOCAL = location.hostname === "localhost" ||
                           location.hostname === "127.0.0.1" ||
@@ -44,8 +32,8 @@
         }
     </script>
 
-    <link rel="stylesheet" href="main.css?v=1">
-    <link rel="stylesheet" href="griffinland.css?v=1">
+    <link rel="stylesheet" href="main.css?v=2">
+    <link rel="stylesheet" href="griffinland.css?v=4">
     <!-- Jquery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -115,6 +103,7 @@
     </footer>
 
     <div id="password-gate">
+      <div id="gate-windows">
         <div id="password-dialog" class="popup-window">
             <div class="windows-header-wrapper clearafter">
                 <div class="window-title">ENTER NETWORK PASSWORD</div>
@@ -139,8 +128,47 @@
                 </div>
             </div>
         </div>
+
+        <!-- Hangman: the way in for anyone without the password. The word is
+             the password; main.js runs the game and fills it in on a win. -->
+        <div id="hangman-window" class="popup-window">
+            <div class="windows-header-wrapper clearafter">
+                <div class="window-title">HANGMAN</div>
+                <div class="window-icons"><span class="win-btn" id="hangman-help" role="button" tabindex="0" aria-expanded="false" aria-controls="hangman-tip" title="What's this?">?</span><span class="win-btn">&#10005;</span></div>
+                <!-- What the ? button pops up, Win95 "What's This?" style -->
+                <div id="hangman-tip" class="hangman-tip" hidden>guess the password</div>
+            </div>
+
+            <div class="popup-inner-wrapper hangman-inner">
+                <svg id="hangman-drawing" viewBox="0 0 200 170" aria-hidden="true">
+                    <g class="hm-gallows">
+                        <rect x="14" y="152" width="120" height="10"/>
+                        <rect x="46" y="14" width="9" height="138"/>
+                        <rect x="46" y="10" width="100" height="9"/>
+                        <path d="M55 42 L82 19"/>
+                        <path d="M140 19 L140 36" class="hm-rope"/>
+                    </g>
+                    <circle class="hm-part" cx="140" cy="49" r="13"/>
+                    <path class="hm-part" d="M140 62 L140 104"/>
+                    <path class="hm-part" d="M140 72 L124 92"/>
+                    <path class="hm-part" d="M140 72 L156 92"/>
+                    <path class="hm-part" d="M140 104 L128 132"/>
+                    <path class="hm-part" d="M140 104 L152 132"/>
+                    <path class="hm-face" d="M132 43 L137 48 M137 43 L132 48 M143 43 L148 48 M148 43 L143 48"/>
+                </svg>
+
+                <div id="hangman-word" aria-live="polite"></div>
+                <div id="hangman-letters"></div>
+                <div id="hangman-status" aria-live="polite"></div>
+
+                <div class="password-buttons hangman-buttons">
+                    <button type="button" id="hangman-reset">New game</button>
+                </div>
+            </div>
+        </div>
+      </div>
     </div>
-    <script src="main.js?v=1"></script>
+    <script src="main.js?v=3"></script>
 
 </body>
 </html>

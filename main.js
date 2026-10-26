@@ -112,6 +112,108 @@ function hashPassword(str) {
     input.focus();
 })();
 
+// ===== Hangman ==============================================================
+// griffinland: the window beside the password dialog. The word is the
+// password, so winning fills it into the dialog and the visitor just hits OK.
+// Writing it here in the clear gives nothing away - the game hands it to
+// anyone who plays well enough.
+(function setUpHangman() {
+    if (!document.documentElement.classList.contains("gated")) return;
+
+    var WORD = "CREATE";
+    var MAX_MISSES = 6;   // one per .hm-part: head, body, two arms, two legs
+
+    var drawing = document.getElementById("hangman-drawing");
+    var parts = drawing.querySelectorAll(".hm-part");
+    var wordEl = document.getElementById("hangman-word");
+    var lettersEl = document.getElementById("hangman-letters");
+    var statusEl = document.getElementById("hangman-status");
+    var guessed, misses, over;
+
+    function render() {
+        wordEl.textContent = WORD.split("").map(function(ch) {
+            return guessed[ch] ? ch : "_";
+        }).join(" ");
+
+        [].forEach.call(parts, function(part, i) {
+            part.classList.toggle("shown", i < misses);
+        });
+        drawing.classList.toggle("lost", misses >= MAX_MISSES);
+
+        var left = MAX_MISSES - misses;
+        statusEl.textContent = over === "won" ? "You got it! The password is in the box - hit OK."
+            : over === "lost" ? "Out of guesses. Try a new game."
+            : left + (left === 1 ? " guess left" : " guesses left");
+    }
+
+    function guess(ch) {
+        if (over || guessed[ch]) return;
+        guessed[ch] = true;
+
+        var btn = lettersEl.querySelector('[data-letter="' + ch + '"]');
+        btn.disabled = true;
+        btn.classList.add(WORD.indexOf(ch) !== -1 ? "hit" : "miss");
+        if (WORD.indexOf(ch) === -1) misses++;
+
+        if (WORD.split("").every(function(c) { return guessed[c]; })) {
+            over = "won";
+            var input = document.getElementById("site-password");
+            input.value = WORD.toLowerCase();
+            document.getElementById("password-error").textContent = "";
+            document.getElementById("password-ok").focus();
+        } else if (misses >= MAX_MISSES) {
+            over = "lost";
+        }
+        render();
+    }
+
+    function newGame() {
+        guessed = {};
+        misses = 0;
+        over = null;
+        lettersEl.innerHTML = "";
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(function(ch) {
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.textContent = ch;
+            btn.setAttribute("data-letter", ch);
+            btn.addEventListener("click", function() { guess(ch); });
+            lettersEl.appendChild(btn);
+        });
+        render();
+    }
+
+    // Typing a letter plays it too, unless the password field has focus -
+    // there the keys belong to the password
+    document.addEventListener("keydown", function(e) {
+        if (e.target.tagName === "INPUT" || e.metaKey || e.ctrlKey || e.altKey) return;
+        if (/^[a-z]$/i.test(e.key)) guess(e.key.toUpperCase());
+    });
+
+    // The title bar's ? opens a "What's This?" tip; clicking it again, or
+    // anywhere else, closes it
+    var help = document.getElementById("hangman-help");
+    var tip = document.getElementById("hangman-tip");
+    function setTip(open) {
+        tip.hidden = !open;
+        help.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+    help.addEventListener("click", function(e) {
+        e.stopPropagation();
+        setTip(tip.hidden);
+    });
+    help.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setTip(tip.hidden);
+        }
+    });
+    document.addEventListener("click", function() { setTip(false); });
+
+    document.getElementById("hangman-reset").addEventListener("click", newGame);
+    newGame();
+})();
+
 // The icon each window carries at the left of its own title bar, and on its
 // taskbar button. Empty until griffinland has windows of its own.
 var windowIcons = {};
@@ -174,8 +276,10 @@ function isMobileLayout() {
 // computed display isn't enough: the password dialog is display:block inside a
 // hidden gate wrapper, so it reads as open when the gate is down. getClientRects
 // comes back empty whenever the element or any ancestor is hidden.
+// griffinland: the gate holds two windows (the dialog and the hangman), so
+// anything inside it is skipped, where mocial only skips the dialog by id.
 function isWindowOnScreen(el) {
-    return el.id !== "password-dialog" && el.getClientRects().length > 0;
+    return !el.closest("#password-gate") && el.getClientRects().length > 0;
 }
 
 function syncOpenWindowClass() {
@@ -445,12 +549,9 @@ makeElementDraggable("computer-icon-group", function() {
 
 // The way back to mocial, from the same spot on the desktop that griffinland
 // sits on mocial's - so the two icons swap you back and forth from one place.
-// An unlocked visitor carries the unlock across in the URL fragment so they
-// don't meet the password dialog again on the other side; see index.html.
+// The sites have different passwords, so mocial asks for its own.
 makeElementDraggable("mocial-icon-group", function() {
-    var pass = sessionStorage.getItem("griffinland-unlocked") === "1"
-        ? "#pass=" + window.SITE_PASSWORD_HASH : "";
-    window.location.href = "https://mocial.org/" + pass;
+    window.location.href = "https://mocial.org/";
 });
 
 // The Win95 title bar every window carries. Built here rather than pasted into

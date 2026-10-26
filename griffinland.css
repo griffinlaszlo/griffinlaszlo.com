@@ -37,3 +37,189 @@
     color: #fff;
     text-decoration: none;
 }
+
+/* ===== Gate with hangman ==================================================
+   The password dialog stays dead center, exactly where it sits on mocial;
+   the hangman game that lets visitors win the password hangs off its right
+   side, centered on it. The wrapper is the dialog's width, so the hangman
+   is placed against the dialog rather than the screen edge. Where there's
+   no room beside it, the hangman drops below and the gate scrolls. */
+#password-gate {
+    overflow-y: auto;
+}
+
+/* Auto margins rather than the gate's own centering: they center the same,
+   but a too-tall stack starts at the top where it can be scrolled to, not
+   pushed off the top of the screen */
+#gate-windows {
+    position: relative;
+    margin: auto;
+    width: 100%;
+    max-width: 560px;   /* the dialog's own max-width */
+}
+
+#hangman-window {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 24px);
+    transform: translateY(-50%);
+    width: 320px;
+    text-align: left;
+}
+
+/* Beside the dialog needs 560 + 2 x (24 + 320) across, and the hangman's
+   height down. Short of that, it stacks under the dialog. */
+@media screen and (max-width: 1279px), screen and (max-height: 659px) {
+    #gate-windows {
+        padding-top: 90px;   /* with the gate's 20px, clears the ~105px typed title */
+    }
+    #hangman-window {
+        position: static;
+        transform: none;
+        width: 100%;
+        max-width: 360px;
+        margin: 20px auto 0;
+    }
+}
+
+.hangman-inner {
+    padding: 14px 16px 16px;
+    box-sizing: border-box;
+}
+
+/* The ? button's pop-up: a Win95 "What's This?" tip, pale yellow with a
+   hard black border, hanging just under the title bar's buttons */
+.hangman-tip {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 4px;
+    z-index: 1;
+    padding: 4px 8px;
+    background: #ffffe1;
+    border: 1px solid #000;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+    font-weight: normal;
+    color: #000;
+    white-space: nowrap;
+}
+.hangman-tip[hidden] {
+    display: none;
+}
+#hangman-help {
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+
+/* The drawing sits in a white inset well, like a Paint canvas */
+#hangman-drawing {
+    display: block;
+    width: 100%;
+    height: 180px;   /* the drawing letterboxes to fit, centered */
+    background: #fff;
+    border: 2px inset #d8d8d8;
+    box-sizing: border-box;
+}
+#hangman-drawing .hm-gallows rect {
+    fill: #a89a86;
+    stroke: #000;
+    stroke-width: 2;
+}
+#hangman-drawing path,
+#hangman-drawing circle {
+    fill: none;
+    stroke: #000;
+    stroke-width: 3;
+    stroke-linecap: round;
+}
+#hangman-drawing .hm-gallows path:not(.hm-rope) {
+    stroke-width: 6;
+    stroke: #6f6455;
+}
+#hangman-drawing .hm-part,
+#hangman-drawing .hm-face {
+    visibility: hidden;
+}
+#hangman-drawing .hm-part.shown,
+#hangman-drawing.lost .hm-face {
+    visibility: visible;
+}
+#hangman-drawing .hm-face {
+    stroke-width: 2;
+}
+
+#hangman-word {
+    margin: 12px 0 10px;
+    text-align: center;
+    font-family: 'W95FA', monospace;
+    font-size: 26px;
+    letter-spacing: 4px;
+    white-space: pre;
+}
+
+#hangman-letters {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+/* Raised Win95 keys; played ones go flat and get the screenshot's marks -
+   a green ring for a hit, a red cross for a miss */
+#hangman-letters button {
+    position: relative;
+    font-family: 'W95FA', Tahoma, sans-serif;
+    font-size: 16px;
+    padding: 4px 0;
+    background: #d8d8d8;
+    border: 2px outset #f0f0f0;
+    border-radius: 0;
+    color: #000;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+#hangman-letters button:active {
+    border-style: inset;
+}
+#hangman-letters button:disabled {
+    border-style: inset;
+    background: #c8c8c8;
+    cursor: default;
+}
+#hangman-letters button.hit::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 24px;
+    height: 24px;
+    transform: translate(-50%, -50%);
+    border: 3px solid #1a8a1a;
+    border-radius: 50%;
+}
+#hangman-letters button.miss {
+    color: #555;
+}
+#hangman-letters button.miss::before,
+#hangman-letters button.miss::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 24px;
+    height: 3px;
+    background: #d01010;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+#hangman-letters button.miss::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+#hangman-status {
+    min-height: 18px;
+    margin: 10px 0 8px;
+    font-size: 13px;
+}
+
+.hangman-buttons {
+    flex-direction: row;
+    justify-content: flex-end;
+}
