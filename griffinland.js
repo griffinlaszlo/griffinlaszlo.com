@@ -256,7 +256,7 @@ function standardMenus(win, extra) {
         } },
         { label: "View", items: function() {
             return (extra.view || []).concat([
-                { label: "Sparkle trail", checked: sparklesOn, action: toggleSparkles },
+                { label: "Snow trail", checked: sparklesOn, action: toggleSparkles },
                 { label: "Screensaver now", action: function() { startScreensaver(true); } }
             ]);
         } },
@@ -310,17 +310,13 @@ function showAbout() {
     openWindow(about.win);
 }
 
-// ===== Sparkle trail =========================================================
-// The cursor is a wand: sparkles pop off it, then flutter down like snow,
-// swaying side to side, with snowflakes mixed in. On by default; View >
-// Sparkle trail turns it off, remembered per browser. Skipped on touch
-// screens and for anyone who's asked for less motion.
+// ===== Snow trail ============================================================
+// Snowflakes drift down off the cursor, swaying gently as they fall. On by
+// default; View > Snow trail turns it off, remembered per browser. Skipped on
+// touch screens and for anyone who's asked for less motion.
 
 var sparklesOn = load("gl-sparkles", true);
-var SPARKLE_GLYPHS = ["✦", "✧", "⋆", "✶"];
-var SPARKLE_COLORS = ["#fff7b0", "#ffffff", "#ffb3e6", "#9ff3ff", "#ffd84a"];
-var SNOW_GLYPHS = ["❄", "❅", "❆", "•"];
-var SNOW_COLORS = ["#ffffff", "#eaf6ff", "#cfeaff"];
+var SNOW_GLYPHS = ["❄", "❅", "❆", "•", "•"];
 var liveSparkles = 0;
 var lastSparkle = null;
 
@@ -330,25 +326,28 @@ function toggleSparkles() {
 }
 
 document.addEventListener("mousemove", function(e) {
-    if (!sparklesOn || REDUCED_MOTION || NO_HOVER || liveSparkles > 70) return;
-    if (lastSparkle && Math.abs(e.clientX - lastSparkle.x) + Math.abs(e.clientY - lastSparkle.y) < 16) return;
+    if (!sparklesOn || REDUCED_MOTION || NO_HOVER || liveSparkles > 50) return;
+    if (lastSparkle && Math.abs(e.clientX - lastSparkle.x) + Math.abs(e.clientY - lastSparkle.y) < 22) return;
     lastSparkle = { x: e.clientX, y: e.clientY };
 
-    // Mostly wand sparkles, with a snowflake every few
-    var snow = Math.random() < 0.4;
-    var s = el("span", "gl-sparkle", pick(snow ? SNOW_GLYPHS : SPARKLE_GLYPHS));
-    s.style.left = e.clientX + "px";
-    s.style.top = e.clientY + "px";
-    s.style.color = pick(snow ? SNOW_COLORS : SPARKLE_COLORS);
-    s.style.setProperty("--sway", rand(8, 22).toFixed(0) + "px");
-    s.style.setProperty("--fall", rand(120, 230).toFixed(0) + "px");
-    s.style.setProperty("--spin", (Math.random() < 0.5 ? -1 : 1) * Math.round(rand(90, 240)) + "deg");
-    s.style.animationDuration = rand(2.2, 3.8).toFixed(2) + "s";
-    s.style.fontSize = rand(snow ? 9 : 10, snow ? 16 : 18).toFixed(0) + "px";
-    document.body.appendChild(s);
+    // An outer span falls, an inner one sways - two smooth motions rather
+    // than one many-stepped one, which is what made the old trail jitter
+    var flake = el("span", "gl-sparkle");
+    var drift = el("span", null, pick(SNOW_GLYPHS));
+    flake.appendChild(drift);
+    flake.style.left = (e.clientX + rand(-6, 6)) + "px";
+    flake.style.top = e.clientY + "px";
+    flake.style.fontSize = rand(8, 15).toFixed(0) + "px";
+    flake.style.setProperty("--fall", rand(140, 260).toFixed(0) + "px");
+    flake.style.setProperty("--alpha", rand(0.6, 1).toFixed(2));
+    flake.style.animationDuration = rand(3, 4.6).toFixed(2) + "s";
+    drift.style.setProperty("--sway", rand(5, 12).toFixed(0) + "px");
+    drift.style.animationDuration = rand(1.1, 1.8).toFixed(2) + "s";
+    document.body.appendChild(flake);
     liveSparkles++;
-    s.addEventListener("animationend", function() {
-        s.remove();
+    flake.addEventListener("animationend", function(ev) {
+        if (ev.target !== flake) return;
+        flake.remove();
         liveSparkles--;
     });
 });
@@ -714,35 +713,58 @@ function showTips() {
 })();
 
 // ===== Hit counter ===========================================================
-// A fake odometer that only ever goes up: a base number, plus a bit for every
-// day since launch, plus every visit from this browser. The digits roll into
-// place like a slot machine.
+// A real one: every visit is counted on Abacus (abacus.jasoncameron.dev), a
+// free hit-counter service - griffinland is static files, with nowhere of its
+// own to keep a count. Each browser session counts once, so reloading doesn't
+// pad the number. The digits roll into place like an odometer once the
+// desktop's showing; if the service can't be reached the counter just hides
+// rather than show a made-up number.
 
-var COUNTER_BASE = 3807;
-var COUNTER_LAUNCH = Date.UTC(2025, 0, 1);
-var visits = load("gl-visits", 0) + 1;
-save("gl-visits", visits);
-var visitorNumber = COUNTER_BASE + Math.floor((Date.now() - COUNTER_LAUNCH) / 86400000) * 13 + visits;
+var COUNTER_URL = "https://abacus.jasoncameron.dev/";
+// Local copies count on a separate test key, so testing never pads the real one
+var COUNTER_KEY = window.IS_LOCAL ? "griffinlaszlo-dev/visitors" : "griffinlaszlo/visitors";
+var visitorNumber = null;
 
 (function() {
     var box = document.getElementById("gl-counter-digits");
-    var digits = String(visitorNumber).padStart(6, "0").slice(-6).split("");
-    var strips = digits.map(function() {
+    var counter = box.closest(".gl-counter");
+    var strips = [];
+    for (var i = 0; i < 6; i++) {
         var cell = el("span", "gl-digit");
         var strip = el("span", "gl-digit-strip", "0\n1\n2\n3\n4\n5\n6\n7\n8\n9");
         cell.appendChild(strip);
         box.appendChild(cell);
-        return strip;
-    });
-    box.setAttribute("aria-label", String(visitorNumber));
-    onDesktopReady(function() {
-        setTimeout(function() {
-            strips.forEach(function(strip, i) {
-                strip.style.transitionDelay = (i * 0.12) + "s";
-                strip.style.transform = "translateY(" + (-Number(digits[i])) + "em)";
+        strips.push(strip);
+    }
+
+    function roll(value) {
+        var digits = String(value).padStart(6, "0").slice(-6).split("");
+        box.setAttribute("aria-label", String(value));
+        strips.forEach(function(strip, i) {
+            strip.style.transitionDelay = (i * 0.12) + "s";
+            strip.style.transform = "translateY(" + (-Number(digits[i])) + "em)";
+        });
+    }
+
+    var counted = false;
+    try { counted = sessionStorage.getItem("gl-counted") === "1"; } catch (e) {}
+
+    fetch(COUNTER_URL + (counted ? "get/" : "hit/") + COUNTER_KEY)
+        .then(function(res) {
+            if (!res.ok) throw new Error(res.status);
+            return res.json();
+        })
+        .then(function(data) {
+            if (typeof data.value !== "number") throw new Error("no count");
+            try { sessionStorage.setItem("gl-counted", "1"); } catch (e) {}
+            visitorNumber = data.value;
+            onDesktopReady(function() {
+                setTimeout(function() { roll(visitorNumber); }, 600);
             });
-        }, 600);
-    });
+        })
+        .catch(function() {
+            counter.hidden = true;
+        });
 })();
 
 document.getElementById("gl-webring-random").addEventListener("click", function(e) {
@@ -815,7 +837,11 @@ var EMPTY_CHAIR_SVG =
         '<path d="M20 1 V16 M9 16 H31 M9 16 V36 M31 16 V36 M5 36 H35 M5 36 V41 H35 V36 M11 41 V49 H29 V41"/>' +
     '</svg>';
 var LIFT_CHAIRS = 6;
-var riderChair = null;   // griffin's chair - see "griffin, on the lift"
+
+// griffin's chair is his chairlift art cut into layers (gifs/griffin/), all
+// the same size so they stack exactly; griffinland.css moves the parts. The
+// order is back to front.
+var RIDER_PARTS = ["base", "leg-right", "leg-left", "head", "arm", "beer"];
 
 function buildLift() {
     var lift = document.querySelector("#gl-horizon .gl-lift");
@@ -826,13 +852,16 @@ function buildLift() {
         if (i === 0) {
             // griffin, riding up with a drink
             chair.classList.add("gl-chair-griffin");
-            var img = el("img", "gl-rider");
-            img.src = "gifs/chairlift.png";
-            img.alt = "griffin";
-            img.title = "griffin";
-            img.draggable = false;
-            swing.appendChild(img);
-            riderChair = chair;
+            var rider = el("div", "gl-rider");
+            rider.title = "griffin";
+            RIDER_PARTS.forEach(function(part) {
+                var img = el("img", "glr-" + part);
+                img.src = "gifs/griffin/" + part + ".png";
+                img.alt = "";
+                img.draggable = false;
+                rider.appendChild(img);
+            });
+            swing.appendChild(rider);
         } else {
             swing.innerHTML = EMPTY_CHAIR_SVG;
         }
@@ -856,254 +885,6 @@ window.addEventListener("resize", function() {
     clearTimeout(treeTimer);
     treeTimer = setTimeout(drawTrees, 200);
 });
-
-// ===== griffin, on the lift ==================================================
-// The rider on the chairlift is a character. Left alone he chats, hums and
-// sips his beer. Hover and he says hi. Click and he does something - talks,
-// throws a snowball at your screen, takes a sip, yodels, throws a shaka, or
-// stops the whole lift so everyone's left dangling. He calls first chair on
-// the way in and says goodbye on the way out.
-
-(function setUpRider() {
-    if (!riderChair) return;
-    var chair = riderChair;
-    var rider = chair.querySelector(".gl-rider");
-
-    var LINES = [
-        "first chair, baby!",
-        "pow day!!!",
-        "this lift is sooo slow",
-        "want a sip? ...too bad",
-        "is it après yet? it's always après.",
-        "don't look down. i looked down.",
-        "welcome to griffinland!",
-        "nice cursor. very sparkly.",
-        "i've been on this lift since 2025",
-        "have you signed my guestbook?",
-        "that dino is SO slow",
-        "send it.",
-        "my goggles are fogging up",
-        "who keeps opening not-a-virus.exe",
-        "the calculator says i'm 100% vibes",
-        "if this lift stops i'm NOT jumping",
-        "you look great today btw",
-        "ski bum? i prefer ski professional"
-    ];
-    var HELLOS = ["yo!", "oh hey!", "sup", "hiii", "oh! didn't see you there"];
-
-    // ----- Speech bubble: rides along with the chair -----
-    var bubble = el("div", "gl-bubble");
-    bubble.hidden = true;
-    chair.appendChild(bubble);
-    var bubbleTimer = null;
-    var spoken = 0;   // counts every line, so a delayed follow-up can tell if he's moved on
-
-    function say(text, ms) {
-        spoken++;
-        bubble.textContent = text;
-        bubble.hidden = false;
-        // Near the right edge the bubble opens to the left, to stay on screen
-        bubble.classList.toggle("gl-bubble-left", chair.getBoundingClientRect().left > window.innerWidth - 220);
-        bubble.classList.remove("pop");
-        void bubble.offsetWidth;
-        bubble.classList.add("pop");
-        clearTimeout(bubbleTimer);
-        bubbleTimer = setTimeout(function() { bubble.hidden = true; }, ms || 2800);
-    }
-
-    // Lines without repeats until they've all been said
-    var lineDeck = [];
-    function nextLine() {
-        if (!lineDeck.length) lineDeck = LINES.slice().sort(function() { return Math.random() - 0.5; });
-        return lineDeck.pop();
-    }
-
-    // A point on his drawing, as fractions of the picture: 0.74, 0.3 is his
-    // raised hand, 0.45, 0.22 his head
-    function spot(fx, fy) {
-        var r = rider.getBoundingClientRect();
-        return { x: r.left + r.width * fx, y: r.top + r.height * fy };
-    }
-
-    function isOnScreen() {
-        var r = chair.getBoundingClientRect();
-        return r.right > 40 && r.left < window.innerWidth - 40;
-    }
-
-    // ----- What he does -----
-
-    function talk() {
-        say(nextLine());
-    }
-
-    function sip() {
-        say(pick(["*sip*", "*gulp*", "*slurp*"]), 1400);
-        rider.classList.remove("gl-sip");
-        void rider.offsetWidth;
-        rider.classList.add("gl-sip");
-        var said = spoken;
-        setTimeout(function() {
-            if (spoken === said) say(pick(["ahh.", "refreshing.", "that's the stuff"]), 1600);
-        }, 1500);
-    }
-
-    function hum() {
-        say(pick(["yodel-ay-ee-hoo ♪", "♪ la la laaa ♪", "♪ do do doo ♪"]), 2400);
-        var head = spot(0.45, 0.2);
-        for (var i = 0; i < 4; i++) {
-            (function(i) {
-                setTimeout(function() {
-                    var note = el("span", "gl-note", pick(["♪", "♫", "♬"]));
-                    note.style.left = (head.x + rand(-8, 8)) + "px";
-                    note.style.top = head.y + "px";
-                    note.style.setProperty("--nx", rand(-30, 30).toFixed(0) + "px");
-                    document.body.appendChild(note);
-                    note.addEventListener("animationend", function() { note.remove(); });
-                }, i * 260);
-            })(i);
-        }
-    }
-
-    function shaka() {
-        say(pick(["shaka, brah", "hang loose", "stay rad"]), 1800);
-        var hand = spot(0.74, 0.3);
-        for (var i = 0; i < 10; i++) {
-            var angle = (i / 10) * Math.PI * 2;
-            var dist = rand(20, 36);
-            var spark = el("span", "gl-burst", pick(["✦", "✧", "✶"]));
-            spark.style.left = hand.x + "px";
-            spark.style.top = hand.y + "px";
-            spark.style.color = pick(SPARKLE_COLORS);
-            spark.style.setProperty("--bx", (Math.cos(angle) * dist).toFixed(0) + "px");
-            spark.style.setProperty("--by", (Math.sin(angle) * dist).toFixed(0) + "px");
-            document.body.appendChild(spark);
-            spark.addEventListener("animationend", function() { this.remove(); });
-        }
-    }
-
-    // A snowball from his raised hand, arcing up and getting bigger as it
-    // comes at you, until it splats on the glass
-    function throwSnowball() {
-        say(pick(["snowball fight!", "incoming!", "heads up!"]), 1600);
-        var from = spot(0.74, 0.3);
-        var to = { x: rand(window.innerWidth * 0.2, window.innerWidth * 0.8), y: rand(90, window.innerHeight * 0.45) };
-        if (REDUCED_MOTION) {
-            splat(to);
-            return;
-        }
-        var ball = el("div", "gl-snowball");
-        document.body.appendChild(ball);
-        var start = performance.now();
-        var DURATION = 850;
-        function fly(now) {
-            var t = Math.min(1, (now - start) / DURATION);
-            var x = from.x + (to.x - from.x) * t;
-            var y = from.y + (to.y - from.y) * t - Math.sin(Math.PI * t) * 160;
-            var scale = 0.6 + t * 1.6;
-            ball.style.transform = "translate(" + x + "px," + y + "px) translate(-50%, -50%) scale(" + scale + ")";
-            if (t < 1) {
-                requestAnimationFrame(fly);
-            } else {
-                ball.remove();
-                splat(to);
-            }
-        }
-        requestAnimationFrame(fly);
-    }
-
-    function splat(at) {
-        var mark = el("div", "gl-splat");
-        mark.style.left = at.x + "px";
-        mark.style.top = at.y + "px";
-        mark.appendChild(el("span", "gl-splat-blob"));
-        for (var i = 0; i < 9; i++) {
-            var angle = rand(0, Math.PI * 2);
-            var dist = rand(55, 90);
-            var fleck = el("span", "gl-fleck");
-            fleck.style.setProperty("--fx", (Math.cos(angle) * dist).toFixed(0) + "px");
-            fleck.style.setProperty("--fy", (Math.sin(angle) * dist).toFixed(0) + "px");
-            fleck.style.width = fleck.style.height = rand(6, 14).toFixed(0) + "px";
-            mark.appendChild(fleck);
-        }
-        mark.appendChild(el("span", "gl-splat-word", "SPLAT!"));
-        document.body.appendChild(mark);
-        setTimeout(function() { mark.classList.add("melt"); }, 1900);
-        setTimeout(function() { mark.remove(); }, 3400);
-    }
-
-    // Every chair stops dead and swings; then the lift lurches back into life
-    var liftStopped = false;
-    function stopLift() {
-        if (liftStopped) return talk();
-        liftStopped = true;
-        say("uh oh... lift's stopped", 3200);
-        var chairs = document.querySelectorAll(".gl-chair");
-        var swings = document.querySelectorAll(".gl-chair-swing");
-        [].forEach.call(chairs, function(c) { c.style.animationPlayState = "paused"; });
-        [].forEach.call(swings, function(s) { s.classList.add("gl-swing-hard"); });
-        setTimeout(function() {
-            [].forEach.call(chairs, function(c) { c.style.animationPlayState = ""; });
-            say("and we're moving!", 2000);
-            setTimeout(function() {
-                [].forEach.call(swings, function(s) { s.classList.remove("gl-swing-hard"); });
-                liftStopped = false;
-            }, 1600);
-        }, 4500);
-    }
-
-    // ----- Clicks: a different thing each time, never the same twice running -----
-    var ACTIONS = [talk, talk, throwSnowball, throwSnowball, sip, hum, shaka, stopLift];
-    var lastAction = null;
-    rider.addEventListener("click", function() {
-        var action;
-        do { action = pick(ACTIONS); } while (action === lastAction);
-        lastAction = action;
-        action();
-    });
-
-    // ----- Hover: he notices you -----
-    var lastHello = 0;
-    rider.addEventListener("mouseenter", function() {
-        rider.classList.add("gl-noticed");
-        if (Date.now() - lastHello > 8000 && bubble.hidden) {
-            lastHello = Date.now();
-            say(pick(HELLOS), 1500);
-        }
-    });
-    rider.addEventListener("mouseleave", function() {
-        rider.classList.remove("gl-noticed");
-    });
-
-    // ----- Left alone: every so often he chats, hums or sips -----
-    function idle() {
-        if (!document.hidden && !isGated() && !saver && isOnScreen() && bubble.hidden) {
-            var roll = Math.random();
-            if (roll < 0.6) talk();
-            else if (roll < 0.8) hum();
-            else sip();
-        }
-        setTimeout(idle, rand(12000, 24000));
-    }
-    setTimeout(idle, rand(6000, 12000));
-
-    // ----- The ride: first chair on the way in, goodbye on the way out -----
-    if (!REDUCED_MOTION) {
-        var lap = { arrived: false, leaving: false };
-        setInterval(function() {
-            if (document.hidden || isGated()) return;
-            var x = chair.getBoundingClientRect().left;
-            if (x < 0) {
-                lap.arrived = lap.leaving = false;
-            } else if (x > 30 && !lap.arrived) {
-                lap.arrived = true;
-                if (bubble.hidden) say(pick(["first chair, baby!", "here we go!", "weeee"]), 2200);
-            } else if (x > window.innerWidth - 170 && !lap.leaving) {
-                lap.leaving = true;
-                if (bubble.hidden) say(pick(["see ya!", "catch you next lap", "bye bye!"]), 2200);
-            }
-        }, 700);
-    }
-})();
 
 // ===== Calculator ============================================================
 // Works like the Windows one (each operator applies to the running total), with
@@ -1217,7 +998,7 @@ function calcPress(label, kind) {
         calcShow(calcFormat(1 / calcValue()));
         calcState.fresh = true;
     } else if (kind === "luck") {
-        calcShow(pick(["7", "777", "11.11", "1000000", String(visitorNumber)]));
+        calcShow(pick(["7", "777", "11.11", "1000000"].concat(visitorNumber ? [String(visitorNumber)] : [])));
         calcState.fresh = true;
         calcDisplay.classList.remove("lucky");
         void calcDisplay.offsetWidth;
@@ -1258,18 +1039,11 @@ makeElementDraggable("calculator-icon-group", function() {
 // entries. guestbookStore is the one place that would change to make it
 // shared: swap its two functions for calls to a real backend.
 
-var GUESTBOOK_SEED = [
-    { name: "the sun", from: "everywhere, basically", message: "tell the moon i said nothing", mood: "sun.gif", date: "2000-01-01" },
-    { name: "tomato", from: "the produce aisle", message: "doctors hate me!!! sign my guestbook too!!!", mood: "tomato.gif", date: "2000-06-17" },
-    { name: "dino", from: "the horizon", message: "still walking. will report back when i get there", mood: "dino.png", date: "2001-03-02" },
-    { name: "lava lamp #3", from: "hot singles chat", message: "anyone else here just vibing", mood: "lavalamp.gif", date: "1998-12-24" },
-    { name: "the moon", from: "the sky (night shift)", message: "love what you've done with the place. very bright. too bright honestly", mood: "moon.gif", date: "1999-08-11" }
-];
 var GUESTBOOK_MOODS = ["dancing.gif", "cat.png", "sun.gif", "moon.gif", "tomato.gif", "lavalamp.gif", "earth.gif", "cd1.png"];
 
 var guestbookStore = {
     list: function() {
-        return load("gl-guestbook", []).concat(GUESTBOOK_SEED);
+        return load("gl-guestbook", []);
     },
     add: function(entry) {
         var mine = load("gl-guestbook", []);
@@ -1340,12 +1114,14 @@ function renderGuestbook() {
     var entries = guestbookStore.list();
     list.textContent = "";
     gb.body.querySelector(".gl-gb-count").textContent =
+        entries.length === 0 ? "Nobody's signed yet - be the first!" :
+        entries.length === 1 ? "1 lovely person has signed the guestbook" :
         entries.length + " lovely people have signed the guestbook";
 
     entries.forEach(function(entry) {
         var li = el("li", "gl-gb-entry");
         var mood = el("img", "gl-gb-mood");
-        mood.src = "gifs/" + (GUESTBOOK_MOODS.indexOf(entry.mood) !== -1 || entry.mood === "dino.png" ? entry.mood : "dancing.gif");
+        mood.src = "gifs/" + (GUESTBOOK_MOODS.indexOf(entry.mood) !== -1 ? entry.mood : "dancing.gif");
         mood.alt = "";
         mood.draggable = false;
         li.appendChild(mood);

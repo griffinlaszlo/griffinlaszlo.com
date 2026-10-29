@@ -742,22 +742,8 @@ typeWriter(title, 'title', 40);
 windowIcons["welcome-window"] = "world_spinning.gif";
 
 (function setUpWelcome() {
-    var CAPTIONS = [
-        "you made it.",
-        "the gates of heaven are now open.",
-        "please wipe your feet.",
-        "population: you.",
-        "free parking. no bad vibes.",
-        "halos available at the front desk.",
-        "everything here is free. nothing here is real."
-    ];
-
     var win = document.getElementById("welcome-window");
-    var caption = document.getElementById("welcome-caption");
-    var label = document.getElementById("welcome-progress-label");
-    var fill = document.getElementById("welcome-progress-fill");
     var origin = document.getElementById("title");
-    var captionTimer = null;
 
     win.insertBefore(buildWindowChrome(win, "YOU HAVE ASCENDED"), win.firstChild);
     $(win).draggable();
@@ -779,22 +765,6 @@ windowIcons["welcome-window"] = "world_spinning.gif";
         art.appendChild(line);
     });
 
-    fill.addEventListener("animationend", function() {
-        label.textContent = "Soul uploaded.";
-    });
-
-    function nextCaption(i) {
-        if ($(win).is(":hidden")) {
-            clearInterval(captionTimer);
-            return;
-        }
-        caption.classList.add("fading");
-        setTimeout(function() {
-            caption.textContent = CAPTIONS[i % CAPTIONS.length];
-            caption.classList.remove("fading");
-        }, 250);
-    }
-
     function open() {
         // Centered on the desktop. Worked out from the CSS width, since the
         // window has no size of its own until it's shown.
@@ -808,17 +778,10 @@ windowIcons["welcome-window"] = "world_spinning.gif";
         void win.offsetWidth;
         win.classList.add("welcome-play");
 
-        label.textContent = "Uploading soul...";
-        caption.textContent = CAPTIONS[0];
-        var i = 0;
-        clearInterval(captionTimer);
-        captionTimer = setInterval(function() { nextCaption(++i); }, 2600);
-
         showPopup("welcome-window", origin);
     }
 
     document.getElementById("welcome-enter").addEventListener("click", function() {
-        clearInterval(captionTimer);
         hidePopup("welcome-window", origin);
     });
 

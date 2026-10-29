@@ -16,6 +16,7 @@ tray clock and fonts are mocial's, and only the desktop changes.
 | `griffinland.js` | griffinland's own desktop toys (below), built on main.js's shell. Loaded after it. |
 | `gifs/` | mocial's own gifs, copied over for the toys to use. |
 | `icons/` | Pixel desktop icons, drawn as SVG. |
+| `tools/griffin-rig.py` | Cuts griffin's chairlift art into the animation layers in `gifs/griffin/`. |
 
 Because these are copies, a fix to the shell on mocial has to be copied here
 too. Keep `main.css` an exact copy and put griffinland's own styling in
@@ -61,11 +62,10 @@ asks for its own password.
 
 Once a visitor is through the gate (or straight away, when there's no gate),
 a "YOU HAVE ASCENDED" window opens: griffinland as the far side of the pearly
-gates. The gates swing open, the spinning world rises out of them as an angel,
-the WordArt waves, captions cycle, and a fake progress bar uploads your soul.
-It's all CSS and SVG in `griffinland.css` and `index.html`; main.js only adds
-the title bar, splits the WordArt into letters and opens it. "Enter paradise"
-closes it. The captions are the `CAPTIONS` list in main.js's welcome section.
+gates. The gates swing open, the spinning world rises out of them as an angel
+and the WordArt waves, over a single centered "Enter paradise" button that
+closes it. It's all CSS and SVG in `griffinland.css` and `index.html`; main.js
+only adds the title bar, splits the WordArt into letters and opens it.
 
 ## The desktop toys
 
@@ -85,27 +85,29 @@ headings in `griffinland.css`. The desktop is forest green (`--gl-forest`).
   DVD bounce. Any input ends it.
 - **Tip of the Day** - opens after the welcome window closes unless "Show tips
   at startup" is unticked. The tips are the `TIPS` list.
-- **Hit counter** - a fake odometer: a base number, plus 13 a day since launch,
-  plus every visit from this browser.
+- **Hit counter** - real visits, counted on Abacus (abacus.jasoncameron.dev), a
+  free hit-counter service; each browser session counts once. Local copies
+  count on a separate `griffinlaszlo-dev` key so testing never pads it. If the
+  service can't be reached, the counter hides.
 - **Badges** - 88x31 "best viewed at 800x600", under construction, and a
   webring badge. (A webring was the 90s way sites found each other: a loop of
   sites linking prev / next / random around the ring. Ours links mocial.)
-- **Sparkle trail** - the cursor's a wand: sparkles pop off it and drift down
-  like snow, with snowflakes mixed in. On by default, toggled in View.
+- **Snow trail** - white snowflakes drift down off the cursor, swaying as they
+  fall. On by default, toggled in View.
 - **The horizon** - a white treeline drawn to fit the window, with a
-  chairlift running over it (griffin rides one chair - `gifs/chairlift.png`,
-  from mocial's chairlift art), the dino walking along the ground and birds
+  chairlift running over it, the dino walking along the ground and birds
   going over.
-- **griffin, on the lift** - the rider is a character. Left alone he chats,
-  hums and sips; hover and he says hi; click and he talks, throws a snowball
-  that splats on your screen, sips, yodels, throws a shaka, or stops the
-  whole lift. He calls first chair on the way in and says bye on the way out.
-  His lines are the `LINES` list.
+- **griffin, on the lift** - one chair carries griffin, animated from his own
+  chairlift art. `tools/griffin-rig.py` cuts the drawing into layers - chair
+  and body, each leg and ski, head, shaka arm, beer hand - and griffinland.css
+  moves them on one 14s routine: he looks around, shakes the shaka, rests his
+  arm on the chair back, and takes a couple of gulps of beer, skis swinging
+  the whole time. Hover and he raises the beer in a cheers.
 - **Calculator** - works like the Windows one, plus a lucky key.
 - **Guestbook** - sign it, pick a mood gif, see everyone's notes. For now the
   entries live in each visitor's own browser (localStorage), because the site
   is static files with nowhere to keep everyone's. `guestbookStore` is the one
-  thing to swap to make it shared.
+  thing to swap to make it shared - that needs a database somewhere.
 
 Everything that moves holds still for visitors who've asked their system for
 reduced motion. Below 960px the horizon steps aside and the badges move to

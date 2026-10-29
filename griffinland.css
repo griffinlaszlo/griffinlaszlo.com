@@ -538,61 +538,12 @@
 }
 
 .welcome-body {
-    padding: 12px 16px 14px;
+    padding: 14px 16px;
     font-family: Tahoma, Geneva, sans-serif;
-}
-
-.welcome-caption {
-    min-height: 22px;
-    margin-bottom: 10px;
-    font-size: 17px;
-    font-weight: bold;
-    text-align: center;
-    transition: opacity 0.25s ease;
-}
-.welcome-caption.fading {
-    opacity: 0;
-}
-
-.welcome-progress-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-}
-#welcome-progress-label {
-    flex: 0 0 auto;
-    min-width: 116px;
-}
-
-/* A Win95 progress bar: navy blocks filling a sunken well, in jumps */
-.welcome-progress {
-    flex: 1 1 auto;
-    height: 18px;
-    padding: 2px;
-    background: #fff;
-    border: 2px inset #d8d8d8;
-    box-sizing: border-box;
-}
-.welcome-progress-fill {
-    width: 0;
-    height: 100%;
-    background: repeating-linear-gradient(90deg, #000080 0 10px, transparent 10px 12px);
-}
-
-.welcome-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-top: 12px;
-}
-.welcome-fineprint {
-    font-size: 10px;
-    color: #555;
 }
 .welcome-buttons {
     flex-direction: row;
+    justify-content: center;
 }
 
 /* ----- What plays when the window opens ----- */
@@ -612,9 +563,6 @@
 }
 .welcome-play .welcome-wordart {
     animation: welcome-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-.welcome-play .welcome-progress-fill {
-    animation: welcome-progress 3.4s steps(18) 0.4s forwards;
 }
 
 @keyframes welcome-spin {
@@ -671,9 +619,6 @@
     from { transform: scale(0) rotate(-8deg); }
     to { transform: scale(1) rotate(0deg); }
 }
-@keyframes welcome-progress {
-    to { width: 100%; }
-}
 
 /* No motion wanted: skip straight to the gates open and the angel up */
 @media (prefers-reduced-motion: reduce) {
@@ -686,10 +631,6 @@
     .welcome-gate-right { transform: rotateY(62deg); }
     .welcome-glow { transform: none; opacity: 1; }
     .welcome-angel { transform: translateY(-84px); opacity: 1; }
-    .welcome-play .welcome-progress-fill {
-        animation: none;
-        width: 100%;
-    }
 }
 
 /* ===== Theme ===============================================================
@@ -949,24 +890,30 @@ html.gated body.dark-mode > header,
     flex: 1 1 100%;
 }
 
-/* ===== Sparkle trail ======================================================== */
+/* ===== Snow trail ========================================================== */
 .gl-sparkle {
     position: fixed;
     z-index: 300000;
     pointer-events: none;
     line-height: 1;
-    text-shadow: 0 0 5px currentColor;
+    color: #fff;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.6);
     transform: translate(-50%, -50%);
-    animation: gl-sparkle-fall 3s ease-in-out forwards;   /* duration set per flake */
+    animation: gl-snow-fall 4s linear forwards;   /* duration set per flake */
 }
-/* Pops off the wand, then drifts down like snow, swaying side to side */
-@keyframes gl-sparkle-fall {
-    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(0deg); }
-    8%   { opacity: 1; transform: translate(-50%, -50%) scale(1.15) rotate(0deg); }
-    30%  { transform: translate(calc(-50% + var(--sway)), calc(-50% + var(--fall) * 0.25)) scale(1) rotate(calc(var(--spin) * 0.3)); }
-    55%  { transform: translate(calc(-50% - var(--sway)), calc(-50% + var(--fall) * 0.5)) scale(0.95) rotate(calc(var(--spin) * 0.55)); }
-    80%  { opacity: 0.85; transform: translate(calc(-50% + var(--sway) * 0.6), calc(-50% + var(--fall) * 0.78)) scale(0.9) rotate(calc(var(--spin) * 0.8)); }
-    100% { opacity: 0; transform: translate(-50%, calc(-50% + var(--fall))) scale(0.85) rotate(var(--spin)); }
+.gl-sparkle span {
+    display: inline-block;
+    animation: gl-snow-sway 1.4s ease-in-out infinite alternate;
+}
+@keyframes gl-snow-fall {
+    0%   { opacity: 0; transform: translate(-50%, -50%); }
+    12%  { opacity: var(--alpha); }
+    70%  { opacity: var(--alpha); }
+    100% { opacity: 0; transform: translate(-50%, calc(-50% + var(--fall))); }
+}
+@keyframes gl-snow-sway {
+    from { transform: translateX(calc(var(--sway) * -1)) rotate(-25deg); }
+    to { transform: translateX(var(--sway)) rotate(25deg); }
 }
 
 /* ===== not-a-virus.exe: the spam storm ====================================== */
@@ -1243,6 +1190,9 @@ html.gated body.dark-mode > header,
     font-size: 12px;
     color: #9fff9f;
 }
+.gl-counter[hidden] {
+    display: none;
+}
 .gl-counter-digits {
     display: inline-flex;
     gap: 1px;
@@ -1291,9 +1241,43 @@ html.gated body.dark-mode > header,
 .gl-badge b {
     font-size: 11px;
 }
-.gl-badge-viewed {
-    background: linear-gradient(180deg, #1c2a8a, #0b6e84);
-    color: #fff;
+/* A raised silver button with a tiny CRT on it, the cursor blinking */
+.gl-badge.gl-badge-viewed {
+    flex-direction: row;
+    gap: 4px;
+    padding: 0 5px 0 4px;
+    background: linear-gradient(180deg, #fafafa 0%, #dcdcdc 55%, #c4c4c4 100%);
+    box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #808080;
+    color: #000;
+}
+.gl-mini-crt {
+    width: 22px;
+    height: 20px;
+    flex: 0 0 auto;
+    shape-rendering: crispEdges;
+}
+.gl-mini-crt-cursor {
+    animation: gl-beacon 1s steps(1, end) infinite;
+}
+.gl-badge-viewed-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1;
+}
+.gl-badge-viewed-text small {
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 7px;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    color: #333;
+}
+.gl-badge-viewed-text b {
+    margin-top: 1px;
+    font-family: 'W95FA', sans-serif;
+    font-size: 14px;
+    font-weight: normal;
+    color: #000080;
 }
 .gl-badge-construction {
     background: repeating-linear-gradient(-45deg, #ffd400 0 7px, #111 7px 14px);
@@ -1440,25 +1424,12 @@ html.gated #gl-horizon {
 .gl-chair-swing svg {
     display: block;
 }
-/* griffin's own chairlift art; its clamp sits just right of center */
+/* griffin's chair: his art's hanger clamp (49% across, 5% down) sits on the
+   cable. The rig itself is styled in "griffin, on the lift" below. */
 .gl-chair-griffin .gl-chair-swing {
-    margin-left: -35px;
-    margin-top: -2px;
+    margin-left: -41px;
+    margin-top: -4px;
 }
-.gl-chair-griffin img {
-    display: block;
-    width: 66px;
-    height: auto;
-}
-/* Lift stopped: every chair swings hard on the spot */
-.gl-chair-swing.gl-swing-hard {
-    animation: gl-swing-hard 0.8s ease-in-out infinite alternate;
-}
-@keyframes gl-swing-hard {
-    from { transform: rotate(-9deg); }
-    to { transform: rotate(9deg); }
-}
-
 @keyframes gl-ride {
     from { left: -80px; top: 32px; }
     to { left: calc(100% + 80px); top: 12px; }
@@ -1755,181 +1726,107 @@ html.gated #gl-horizon {
     }
 }
 
-/* ===== griffin, on the lift ================================================= */
-/* He's the one thing on the horizon you can touch */
+/* ===== griffin, on the lift =================================================
+   His chairlift art, cut into layers that all share one canvas: the chair and
+   his body (base), each leg with its ski, his head, the shaka arm and the hand
+   holding the beer. Each part turns on its own joint - the transform-origins
+   are those joints, as a share of the canvas - and the moves are in % of it
+   too, so they hold at any size.
+
+   One 14s routine, every part keyed to the same clock: he looks left, shakes
+   the shaka, rests his arm on the chair back, looks right, takes a couple of
+   gulps of his beer, glances around. His skis swing the whole time. Hover
+   and he raises the beer to you. */
 .gl-rider {
+    position: relative;
+    width: 84px;
+    height: 89px;
     pointer-events: auto;
-    cursor: url('cursor-pointer.png') 8 0, pointer;
-    transform-origin: 50% 10%;
-    transition: transform 0.2s ease;
 }
-.gl-rider.gl-noticed {
-    transform: scale(1.08) rotate(3deg);
-}
-/* Tips his head back for a swig */
-.gl-rider.gl-sip {
-    animation: gl-sip 1.3s ease-in-out;
-}
-@keyframes gl-sip {
-    30%, 65% { transform: rotate(-10deg) translateY(-3px); }
+.gl-rider img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
 }
 
-/* His speech bubble, above the cable with its tail pointing down at him */
-.gl-bubble {
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 4px;
-    width: max-content;
-    max-width: 190px;
-    padding: 4px 9px;
-    background: #fff;
-    border: 2px solid #000;
-    border-radius: 12px;
-    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
-    font-family: Tahoma, Geneva, sans-serif;
-    font-size: 12px;
-    font-weight: bold;
-    line-height: 1.3;
-    color: #000;
-    white-space: normal;
+.glr-head { transform-origin: 43.1% 43.3%; animation: glr-head 14s ease-in-out infinite; }
+.glr-arm  { transform-origin: 54% 43.5%;   animation: glr-arm 14s ease-in-out infinite; }
+.glr-beer { transform-origin: 33.5% 51.5%; animation: glr-beer 14s ease-in-out infinite; }
+/* The skis swing on their own rhythm, out of step with each other */
+.glr-leg-left  { transform-origin: 50.6% 55.6%; animation: glr-leg-left 1.7s ease-in-out infinite alternate; }
+.glr-leg-right { transform-origin: 69% 54.4%;   animation: glr-leg-right 2.1s ease-in-out infinite alternate; }
+
+@keyframes glr-head {
+    0%, 8%   { transform: none; }
+    12%, 24% { transform: translateX(-0.5%) rotate(-8deg); }    /* looks left */
+    28%, 32% { transform: none; }
+    36%, 46% { transform: translateX(0.4%) rotate(6deg); }      /* looks right */
+    50%      { transform: none; }
+    56%, 67% { transform: rotate(-6deg); }                      /* head back for a sip */
+    72%, 84% { transform: none; }
+    88%, 94% { transform: translateX(-0.3%) rotate(-4deg); }    /* a glance */
+    100%     { transform: none; }
 }
-.gl-bubble[hidden] {
-    display: none;
+@keyframes glr-arm {
+    0%, 14%  { transform: none; }                               /* shaka */
+    17%      { transform: rotate(-14deg); }                     /* ...shaken */
+    19%      { transform: rotate(-4deg); }
+    21%      { transform: rotate(-14deg); }
+    23%      { transform: rotate(-4deg); }
+    26%      { transform: none; }
+    32%, 48% { transform: rotate(48deg); }                      /* resting on the chair back */
+    54%, 78% { transform: none; }
+    81%      { transform: rotate(-12deg); }
+    83%      { transform: rotate(-3deg); }
+    85%      { transform: rotate(-12deg); }
+    88%      { transform: none; }
+    100%     { transform: none; }
 }
-.gl-bubble::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 12px;
-    border: 7px solid transparent;
-    border-top-color: #000;
-    border-left-width: 0;
+@keyframes glr-beer {
+    0%, 52%  { transform: none; }
+    57%      { transform: translate(4.5%, -4.3%) rotate(38deg); }  /* to his mouth */
+    60%      { transform: translate(4.5%, -4.3%) rotate(45deg); }  /* gulp */
+    63%      { transform: translate(4.5%, -4.3%) rotate(38deg); }
+    65%      { transform: translate(4.5%, -4.3%) rotate(45deg); }  /* gulp */
+    67%      { transform: translate(4.5%, -4.3%) rotate(38deg); }
+    72%, 100% { transform: none; }
 }
-.gl-bubble.gl-bubble-left {
-    left: auto;
-    right: 4px;
+@keyframes glr-leg-left {
+    from { transform: rotate(-4deg); }
+    to { transform: rotate(6deg); }
 }
-.gl-bubble.gl-bubble-left::after {
-    left: auto;
-    right: 12px;
-    border-left-width: 7px;
-    border-right-width: 0;
-}
-.gl-bubble.pop {
-    animation: gl-bubble-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    transform-origin: 12px 100%;
-}
-@keyframes gl-bubble-pop {
-    from { transform: scale(0.5); opacity: 0; }
+@keyframes glr-leg-right {
+    from { transform: rotate(4deg); }
+    to { transform: rotate(-6deg); }
 }
 
-/* Humming: notes float up off his head */
-.gl-note {
-    position: fixed;
-    z-index: 250000;
-    pointer-events: none;
-    font-size: 16px;
-    color: #fff;
-    text-shadow: 1px 1px 0 #000;
-    animation: gl-note-rise 2s ease-out forwards;
+/* Hover: cheers! The beer goes up and bobs, he leans in, the shaka waves */
+.gl-rider:hover .glr-beer {
+    animation: glr-cheers 0.8s ease-in-out infinite alternate;
 }
-@keyframes gl-note-rise {
-    from { opacity: 1; transform: translate(-50%, 0) rotate(-10deg); }
-    to { opacity: 0; transform: translate(calc(-50% + var(--nx)), -70px) rotate(15deg); }
+.gl-rider:hover .glr-head {
+    animation: none;
+    transform: rotate(4deg);
 }
-
-/* Shaka: a ring of sparkles bursts off his hand */
-.gl-burst {
-    position: fixed;
-    z-index: 250000;
-    pointer-events: none;
-    font-size: 14px;
-    text-shadow: 0 0 5px currentColor;
-    animation: gl-burst 0.8s ease-out forwards;
+.gl-rider:hover .glr-arm {
+    animation: glr-wave 0.5s ease-in-out infinite alternate;
 }
-@keyframes gl-burst {
-    from { opacity: 1; transform: translate(-50%, -50%) scale(0.3); }
-    to { opacity: 0; transform: translate(calc(-50% + var(--bx)), calc(-50% + var(--by))) scale(1.1); }
+@keyframes glr-cheers {
+    from { transform: translate(-0.5%, -5.4%) rotate(-12deg); }
+    to { transform: translate(-0.5%, -6.6%) rotate(-5deg); }
 }
-
-/* The snowball in flight */
-.gl-snowball {
-    position: fixed;
-    left: 0;
-    top: 0;
-    z-index: 250000;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    pointer-events: none;
-    background: radial-gradient(circle at 35% 35%, #fff 0%, #f2f8ff 55%, #b9cde0 100%);
-    box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
-}
-
-/* ...and where it hits the glass: a lumpy blob, flecks flung out, SPLAT!,
-   then it slides down and melts away */
-.gl-splat {
-    position: fixed;
-    z-index: 250000;
-    width: 0;
-    height: 0;
-    pointer-events: none;
-}
-.gl-splat-blob {
-    position: absolute;
-    left: -60px;
-    top: -55px;
-    width: 120px;
-    height: 110px;
-    background: radial-gradient(circle at 40% 38%, #fff 0%, #f6faff 50%, #d5e4f2 100%);
-    border-radius: 48% 52% 41% 59% / 55% 44% 56% 45%;
-    box-shadow: inset -6px -8px 12px rgba(120, 150, 180, 0.35), 2px 3px 6px rgba(0, 0, 0, 0.25);
-    animation: gl-splat-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.gl-fleck {
-    position: absolute;
-    left: 0;
-    top: 0;
-    border-radius: 50%;
-    background: #f6faff;
-    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.25);
-    transform: translate(calc(-50% + var(--fx)), calc(-50% + var(--fy)));
-    animation: gl-fleck-out 0.3s ease-out;
-}
-.gl-splat-word {
-    position: absolute;
-    left: 0;
-    top: 0;
-    transform: translate(-50%, -50%) rotate(-10deg);
-    font-family: 'W95FA', sans-serif;
-    font-size: 22px;
-    color: #1b3cd8;
-    text-shadow: 1px 1px 0 #fff;
-    white-space: nowrap;
-}
-.gl-splat.melt {
-    animation: gl-melt 1.5s ease-in forwards;
-}
-@keyframes gl-splat-in {
-    from { transform: scale(0.2); }
-}
-@keyframes gl-fleck-out {
-    from { transform: translate(-50%, -50%) scale(0.2); }
-}
-@keyframes gl-melt {
-    to { transform: translateY(40px) scaleY(1.15); opacity: 0; }
+@keyframes glr-wave {
+    from { transform: rotate(-14deg); }
+    to { transform: rotate(-3deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .gl-rider,
-    .gl-rider.gl-sip,
-    .gl-bubble.pop,
-    .gl-note,
-    .gl-burst,
-    .gl-splat-blob,
-    .gl-fleck,
-    .gl-splat.melt {
+    .gl-rider img,
+    .gl-rider:hover img {
         animation: none;
-        transition: none;
+    }
+    .gl-rider:hover .glr-beer {
+        transform: translate(-0.5%, -5.4%) rotate(-12deg);
     }
 }
