@@ -1034,21 +1034,74 @@ makeElementDraggable("calculator-icon-group", function() {
 });
 
 // ===== Guestbook =============================================================
-// Sign My Guestbook!! Entries are kept in this browser's localStorage for now -
-// the site is static files on GitHub Pages, with nowhere to keep everyone's
-// entries. guestbookStore is the one place that would change to make it
-// shared: swap its two functions for calls to a real backend.
+// Sign My Guestbook!! Entries live in a Supabase table (supabase/guestbook.sql
+// sets it up), so everyone sees everyone's. The site talks to Supabase's REST
+// API directly - no library to load.
+//
+// SUPABASE_URL and SUPABASE_KEY come from the project's settings: its URL and
+// its publishable key. Both are meant to be public; the table's row-level
+// security is what limits that key to reading and signing - never editing or
+// deleting. Left blank, the guestbook falls back to keeping entries in this
+// browser only.
+
+var SUPABASE_URL = "https://fsoqmwwiypftcbgcczju.supabase.co";
+var SUPABASE_KEY = "sb_publishable_OUk0e74Xl963XQ1vL452UA_ITeX2JbU";
 
 var GUESTBOOK_MOODS = ["dancing.gif", "cat.png", "sun.gif", "moon.gif", "tomato.gif", "lavalamp.gif", "earth.gif", "cd1.png"];
 
-var guestbookStore = {
+function supabaseHeaders(extra) {
+    var headers = { apikey: SUPABASE_KEY };
+    // Older projects' anon keys are JWTs and go in Authorization too; the
+    // newer sb_publishable_ keys only go in apikey
+    if (SUPABASE_KEY.indexOf("sb_") !== 0) headers.Authorization = "Bearer " + SUPABASE_KEY;
+    for (var k in extra) headers[k] = extra[k];
+    return headers;
+}
+
+function okOrThrow(res) {
+    if (!res.ok) throw new Error("guestbook " + res.status);
+    return res;
+}
+
+// Both versions return promises, so the rest of the guestbook doesn't care
+// which one it's talking to
+var guestbookStore = SUPABASE_URL && SUPABASE_KEY ? {
     list: function() {
-        return load("gl-guestbook", []);
+        return fetch(SUPABASE_URL + "/rest/v1/guestbook" +
+                     "?select=name,from_place,homepage,message,mood,created_at" +
+                     "&order=created_at.desc&limit=200",
+                     { headers: supabaseHeaders() })
+            .then(okOrThrow)
+            .then(function(res) { return res.json(); })
+            .then(function(rows) {
+                return rows.map(function(r) {
+                    return { name: r.name, from: r.from_place, homepage: r.homepage,
+                             message: r.message, mood: r.mood, date: r.created_at };
+                });
+            });
+    },
+    add: function(entry) {
+        return fetch(SUPABASE_URL + "/rest/v1/guestbook", {
+            method: "POST",
+            headers: supabaseHeaders({ "Content-Type": "application/json", "Prefer": "return=minimal" }),
+            body: JSON.stringify({
+                name: entry.name,
+                from_place: entry.from || null,
+                homepage: entry.homepage || null,
+                message: entry.message,
+                mood: entry.mood
+            })
+        }).then(okOrThrow);
+    }
+} : {
+    list: function() {
+        return Promise.resolve(load("gl-guestbook", []));
     },
     add: function(entry) {
         var mine = load("gl-guestbook", []);
         mine.unshift(entry);
         save("gl-guestbook", mine.slice(0, 200));
+        return Promise.resolve();
     }
 };
 
@@ -1068,6 +1121,8 @@ gb.body.innerHTML =
         '<label>Where are you from? <input name="from" maxlength="60" autocomplete="off"></label>' +
         '<label>Your homepage <input name="homepage" maxlength="200" placeholder="http://" autocomplete="off"></label>' +
         '<label>Your message <textarea name="message" maxlength="300" rows="4" required></textarea></label>' +
+        // Hidden from people; bots that fill in every field fill this one too
+        '<input name="website" class="gl-gb-honey" tabindex="-1" autocomplete="off" aria-hidden="true">' +
         '<fieldset class="gl-gb-moods"><legend>Your mood today</legend></fieldset>' +
         '<div class="gl-gb-error" aria-live="polite"></div>' +
         '<div class="gl-buttons"><button type="submit" class="gl-btn">Sign it!</button><button type="button" class="gl-btn gl-gb-cancel">Cancel</button></div>' +
@@ -1109,38 +1164,45 @@ function formatGuestbookDate(iso) {
     return d.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 }
 
+var gbCount = gb.body.querySelector(".gl-gb-count");
+
 function renderGuestbook() {
     var list = gb.body.querySelector(".gl-gb-entries");
-    var entries = guestbookStore.list();
-    list.textContent = "";
-    gb.body.querySelector(".gl-gb-count").textContent =
-        entries.length === 0 ? "Nobody's signed yet - be the first!" :
-        entries.length === 1 ? "1 lovely person has signed the guestbook" :
-        entries.length + " lovely people have signed the guestbook";
+    gbCount.textContent = "Loading the guestbook...";
 
-    entries.forEach(function(entry) {
-        var li = el("li", "gl-gb-entry");
-        var mood = el("img", "gl-gb-mood");
-        mood.src = "gifs/" + (GUESTBOOK_MOODS.indexOf(entry.mood) !== -1 ? entry.mood : "dancing.gif");
-        mood.alt = "";
-        mood.draggable = false;
-        li.appendChild(mood);
+    return guestbookStore.list().then(function(entries) {
+        list.textContent = "";
+        gbCount.textContent =
+            entries.length === 0 ? "Nobody's signed yet - be the first!" :
+            entries.length === 1 ? "1 lovely person has signed the guestbook" :
+            entries.length + " lovely people have signed the guestbook";
 
-        var text = el("div", "gl-gb-entry-text");
-        var head = el("div", "gl-gb-name", entry.name);
-        if (entry.from) head.appendChild(el("span", "gl-gb-from", " from " + entry.from));
-        text.appendChild(head);
-        text.appendChild(el("div", "gl-gb-date", formatGuestbookDate(entry.date)));
-        text.appendChild(el("p", "gl-gb-msg", entry.message));
-        if (entry.homepage) {
-            var a = el("a", "gl-gb-home", entry.homepage);
-            a.href = entry.homepage;
-            a.target = "_blank";
-            a.rel = "nofollow noopener";
-            text.appendChild(a);
-        }
-        li.appendChild(text);
-        list.appendChild(li);
+        entries.forEach(function(entry) {
+            var li = el("li", "gl-gb-entry");
+            var mood = el("img", "gl-gb-mood");
+            mood.src = "gifs/" + (GUESTBOOK_MOODS.indexOf(entry.mood) !== -1 ? entry.mood : "dancing.gif");
+            mood.alt = "";
+            mood.draggable = false;
+            li.appendChild(mood);
+
+            var text = el("div", "gl-gb-entry-text");
+            var head = el("div", "gl-gb-name", entry.name);
+            if (entry.from) head.appendChild(el("span", "gl-gb-from", " from " + entry.from));
+            text.appendChild(head);
+            text.appendChild(el("div", "gl-gb-date", formatGuestbookDate(entry.date)));
+            text.appendChild(el("p", "gl-gb-msg", entry.message));
+            if (entry.homepage) {
+                var a = el("a", "gl-gb-home", entry.homepage);
+                a.href = entry.homepage;
+                a.target = "_blank";
+                a.rel = "nofollow noopener";
+                text.appendChild(a);
+            }
+            li.appendChild(text);
+            list.appendChild(li);
+        });
+    }).catch(function() {
+        gbCount.textContent = "Couldn't reach the guestbook right now - try again in a bit.";
     });
 }
 
@@ -1151,6 +1213,7 @@ gbForm.addEventListener("submit", function(e) {
     var message = f.message.value.trim();
     var homepage = f.homepage.value.trim();
     var error = gb.body.querySelector(".gl-gb-error");
+    var submit = gbForm.querySelector("button[type=submit]");
 
     if (!name || !message) {
         error.textContent = "Please fill in your name and a message!";
@@ -1163,6 +1226,23 @@ gbForm.addEventListener("submit", function(e) {
     }
     error.textContent = "";
 
+    function done() {
+        gbForm.reset();
+        gbForm.hidden = true;
+        submit.disabled = false;
+        submit.textContent = "Sign it!";
+        renderGuestbook();
+        gb.body.scrollTop = 0;
+    }
+
+    // A bot filled in the hidden field: thank it and keep nothing
+    if (f.website.value) {
+        done();
+        return;
+    }
+
+    submit.disabled = true;
+    submit.textContent = "Signing...";
     guestbookStore.add({
         name: name,
         from: f.from.value.trim(),
@@ -1170,20 +1250,20 @@ gbForm.addEventListener("submit", function(e) {
         message: message,
         mood: gbForm.querySelector("input[name=mood]:checked").value,
         date: new Date().toISOString().slice(0, 10)
+    }).then(done).catch(function() {
+        submit.disabled = false;
+        submit.textContent = "Sign it!";
+        error.textContent = "Couldn't save that - try again in a bit.";
     });
-    gbForm.reset();
-    gbForm.hidden = true;
-    renderGuestbook();
-    gb.body.scrollTop = 0;
 });
 
 gb.win.insertBefore(buildMenuBar(gb.win, standardMenus(gb.win, {
     file: [{ label: "Sign the guestbook...", action: openGuestbookForm }, "-"]
 })), gb.body);
 
-renderGuestbook();
-
+// Fresh entries every time it's opened, since other people sign it too
 makeElementDraggable("guestbook-icon-group", function() {
+    if ($(gb.win).is(":hidden")) renderGuestbook();
     openWindow(gb.win, document.getElementById("guestbook-icon-group"));
 });
 

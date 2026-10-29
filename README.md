@@ -16,6 +16,7 @@ tray clock and fonts are mocial's, and only the desktop changes.
 | `griffinland.js` | griffinland's own desktop toys (below), built on main.js's shell. Loaded after it. |
 | `gifs/` | mocial's own gifs, copied over for the toys to use. |
 | `icons/` | Pixel desktop icons, drawn as SVG. |
+| `supabase/guestbook.sql` | Sets up the guestbook's table in Supabase. |
 | `tools/griffin-rig.py` | Cuts griffin's chairlift art into the animation layers in `gifs/griffin/`. |
 
 Because these are copies, a fix to the shell on mocial has to be copied here
@@ -104,10 +105,14 @@ headings in `griffinland.css`. The desktop is forest green (`--gl-forest`).
   arm on the chair back, and takes a couple of gulps of beer, skis swinging
   the whole time. Hover and he raises the beer in a cheers.
 - **Calculator** - works like the Windows one, plus a lucky key.
-- **Guestbook** - sign it, pick a mood gif, see everyone's notes. For now the
-  entries live in each visitor's own browser (localStorage), because the site
-  is static files with nowhere to keep everyone's. `guestbookStore` is the one
-  thing to swap to make it shared - that needs a database somewhere.
+- **Guestbook** - sign it, pick a mood gif, see everyone's notes. Entries live
+  in a Supabase table: `supabase/guestbook.sql` creates it (run it once in the
+  project's SQL Editor), and `SUPABASE_URL` / `SUPABASE_KEY` at the top of the
+  guestbook section in griffinland.js point the site at it. The key is the
+  project's publishable key, which is public by design - row-level security
+  limits it to reading and signing. To delete an entry, use the Supabase
+  dashboard (Table Editor > guestbook). With the two left blank, entries stay
+  in each visitor's own browser instead. A hidden form field catches bots.
 
 Everything that moves holds still for visitors who've asked their system for
 reduced motion. Below 960px the horizon steps aside and the badges move to

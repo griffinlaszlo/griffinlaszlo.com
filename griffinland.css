@@ -1637,6 +1637,14 @@ html.gated #gl-horizon {
 .gl-gb-mood-pick input:focus-visible + img {
     outline: 1px dotted #000;
 }
+/* The bot trap: off-screen, so people never see it */
+.gl-gb-honey {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
 .gl-gb-error {
     min-height: 16px;
     color: #a00000;
