@@ -311,13 +311,16 @@ function showAbout() {
 }
 
 // ===== Sparkle trail =========================================================
-// Little stars falling off the cursor. On by default; View > Sparkle trail
-// turns it off, remembered per browser. Skipped on touch screens and for
-// anyone who's asked for less motion.
+// The cursor is a wand: sparkles pop off it, then flutter down like snow,
+// swaying side to side, with snowflakes mixed in. On by default; View >
+// Sparkle trail turns it off, remembered per browser. Skipped on touch
+// screens and for anyone who's asked for less motion.
 
 var sparklesOn = load("gl-sparkles", true);
-var SPARKLE_GLYPHS = ["✦", "✧", "⋆", "✶", "·"];
+var SPARKLE_GLYPHS = ["✦", "✧", "⋆", "✶"];
 var SPARKLE_COLORS = ["#fff7b0", "#ffffff", "#ffb3e6", "#9ff3ff", "#ffd84a"];
+var SNOW_GLYPHS = ["❄", "❅", "❆", "•"];
+var SNOW_COLORS = ["#ffffff", "#eaf6ff", "#cfeaff"];
 var liveSparkles = 0;
 var lastSparkle = null;
 
@@ -327,16 +330,21 @@ function toggleSparkles() {
 }
 
 document.addEventListener("mousemove", function(e) {
-    if (!sparklesOn || REDUCED_MOTION || NO_HOVER || liveSparkles > 40) return;
+    if (!sparklesOn || REDUCED_MOTION || NO_HOVER || liveSparkles > 70) return;
     if (lastSparkle && Math.abs(e.clientX - lastSparkle.x) + Math.abs(e.clientY - lastSparkle.y) < 16) return;
     lastSparkle = { x: e.clientX, y: e.clientY };
 
-    var s = el("span", "gl-sparkle", pick(SPARKLE_GLYPHS));
+    // Mostly wand sparkles, with a snowflake every few
+    var snow = Math.random() < 0.4;
+    var s = el("span", "gl-sparkle", pick(snow ? SNOW_GLYPHS : SPARKLE_GLYPHS));
     s.style.left = e.clientX + "px";
     s.style.top = e.clientY + "px";
-    s.style.color = pick(SPARKLE_COLORS);
-    s.style.setProperty("--dx", rand(-18, 18).toFixed(0) + "px");
-    s.style.fontSize = rand(10, 18).toFixed(0) + "px";
+    s.style.color = pick(snow ? SNOW_COLORS : SPARKLE_COLORS);
+    s.style.setProperty("--sway", rand(8, 22).toFixed(0) + "px");
+    s.style.setProperty("--fall", rand(120, 230).toFixed(0) + "px");
+    s.style.setProperty("--spin", (Math.random() < 0.5 ? -1 : 1) * Math.round(rand(90, 240)) + "deg");
+    s.style.animationDuration = rand(2.2, 3.8).toFixed(2) + "s";
+    s.style.fontSize = rand(snow ? 9 : 10, snow ? 16 : 18).toFixed(0) + "px";
     document.body.appendChild(s);
     liveSparkles++;
     s.addEventListener("animationend", function() {
@@ -477,7 +485,7 @@ var promo = makeWindow({ id: "promo-window", title: "!!! FREE MUSIC !!!", icon: 
 promo.body.innerHTML =
     '<div class="gl-promo-marquee"><span>&#9733; FREE MUSIC IN YOUR AREA &#9733; NO CREDIT CARD NEEDED &#9733; ACT NOW &#9733; FREE MUSIC IN YOUR AREA &#9733; NO CREDIT CARD NEEDED &#9733; ACT NOW</span></div>' +
     '<img src="gifs/music_fire.gif" alt="" class="gl-promo-fire" draggable="false">' +
-    '<div class="gl-promo-text">Brand new tunes are waiting for you at <b>mocial.org</b></div>';
+    '<div class="gl-promo-text">Have good music and want to blow up as an artist?</div>';
 var promoBtn = el("button", "gl-promo-btn", "CLICK HERE!");
 promoBtn.type = "button";
 promoBtn.addEventListener("click", function() {
@@ -743,15 +751,27 @@ document.getElementById("gl-webring-random").addEventListener("click", function(
 });
 
 // ===== The horizon ===========================================================
-// A white line-drawn treeline across the bottom of the desktop, redrawn to
-// fit whenever the window changes size.
+// A white line-drawn treeline across the bottom of the desktop, with a
+// chairlift running over it: the cable and its towers are drawn in with the
+// trees, and the chairs (one of them carrying griffin) ride along on top.
+// Redrawn to fit whenever the window changes size.
+
+var GROUND_Y = 160;              // the ground line, in the horizon's 170px
+var CABLE_LEFT = 34;             // the cable's height at the left edge...
+var CABLE_RIGHT = 16;            // ...and the right, so it climbs a little
+var LIFT_SECONDS = 70;           // one chair's trip across the screen
+
+function cableY(x, W) {
+    return CABLE_LEFT + (CABLE_RIGHT - CABLE_LEFT) * (x / W);
+}
 
 function drawTrees() {
     var holder = document.querySelector("#gl-horizon .gl-trees");
     if (!holder) return;
     var W = Math.max(320, window.innerWidth);
-    var base = 80;
+    var base = GROUND_Y;
     var d = "";
+
     var x = rand(10, 40);
     while (x < W) {
         var h = rand(26, 62), w = h * 0.36;
@@ -771,9 +791,63 @@ function drawTrees() {
         }
         x += rand(70, 190);
     }
-    holder.innerHTML = '<svg viewBox="0 0 ' + W + ' 90" width="' + W + '" height="90"><path d="' + d + '"/></svg>';
+
+    // The lift: one cable climbing gently left to right...
+    d += " M0 " + cableY(0, W) + " L" + W + " " + cableY(W, W);
+    // ...held up by towers - a tapered pole, a cross-arm and two sheaves
+    for (var t = 170; t < W; t += 380) {
+        var cy = cableY(t, W);
+        d += " M" + (t - 5) + " " + base + " L" + (t - 2) + " " + (cy + 6) +
+             " M" + (t + 5) + " " + base + " L" + (t + 2) + " " + (cy + 6) +
+             " M" + (t - 4) + " " + (base - 30) + " H" + (t + 4) +
+             " M" + (t - 3) + " " + (base - 70) + " H" + (t + 3) +
+             " M" + (t - 16) + " " + (cy + 6) + " H" + (t + 16) +
+             " M" + (t - 11) + " " + (cy + 6) + " V" + (cy + 2) + " M" + (t + 11) + " " + (cy + 6) + " V" + (cy + 2);
+    }
+
+    holder.innerHTML = '<svg viewBox="0 0 ' + W + ' 170" width="' + W + '" height="170"><path d="' + d + '"/></svg>';
 }
+
+// An empty chair in the same white line art as the trees: the hanger, the
+// bar, the seat and a footrest
+var EMPTY_CHAIR_SVG =
+    '<svg viewBox="0 0 40 52" width="34" height="44">' +
+        '<path d="M20 1 V16 M9 16 H31 M9 16 V36 M31 16 V36 M5 36 H35 M5 36 V41 H35 V36 M11 41 V49 H29 V41"/>' +
+    '</svg>';
+var LIFT_CHAIRS = 6;
+
+function buildLift() {
+    var lift = document.querySelector("#gl-horizon .gl-lift");
+    if (!lift) return;
+    for (var i = 0; i < LIFT_CHAIRS; i++) {
+        var chair = el("div", "gl-chair");
+        var swing = el("div", "gl-chair-swing");
+        if (i === 0) {
+            // griffin, riding up with a drink
+            chair.classList.add("gl-chair-griffin");
+            var img = el("img");
+            img.src = "gifs/chairlift.png";
+            img.alt = "";
+            img.draggable = false;
+            swing.appendChild(img);
+        } else {
+            swing.innerHTML = EMPTY_CHAIR_SVG;
+        }
+        // Spread evenly along the cable, each a slice of the trip ahead
+        chair.style.animationDelay = (-LIFT_SECONDS * i / LIFT_CHAIRS) + "s";
+        swing.style.animationDelay = (-i * 0.7) + "s";
+        if (REDUCED_MOTION) {
+            var x = (i + 0.5) / LIFT_CHAIRS * window.innerWidth;
+            chair.style.left = x + "px";
+            chair.style.top = (cableY(x, window.innerWidth) - 3) + "px";
+        }
+        chair.appendChild(swing);
+        lift.appendChild(chair);
+    }
+}
+
 drawTrees();
+buildLift();
 var treeTimer = null;
 window.addEventListener("resize", function() {
     clearTimeout(treeTimer);

@@ -87,11 +87,15 @@ headings in `griffinland.css`. The desktop is forest green (`--gl-forest`).
   at startup" is unticked. The tips are the `TIPS` list.
 - **Hit counter** - a fake odometer: a base number, plus 13 a day since launch,
   plus every visit from this browser.
-- **Badges** - 88x31 "best viewed at 800x600", under construction, and the
-  griffinland webring, which links back to mocial.
-- **Sparkle trail** - stars off the cursor, on by default, toggled in View.
-- **The horizon** - a white treeline drawn to fit the window, with the dino
-  walking along it and birds going over.
+- **Badges** - 88x31 "best viewed at 800x600", under construction, and a
+  webring badge. (A webring was the 90s way sites found each other: a loop of
+  sites linking prev / next / random around the ring. Ours links mocial.)
+- **Sparkle trail** - the cursor's a wand: sparkles pop off it and drift down
+  like snow, with snowflakes mixed in. On by default, toggled in View.
+- **The horizon** - a white treeline drawn to fit the window, with a
+  chairlift running over it (griffin rides one chair - `gifs/chairlift.png`,
+  from mocial's chairlift art), the dino walking along the ground and birds
+  going over.
 - **Calculator** - works like the Windows one, plus a lucky key.
 - **Guestbook** - sign it, pick a mood gif, see everyone's notes. For now the
   entries live in each visitor's own browser (localStorage), because the site
