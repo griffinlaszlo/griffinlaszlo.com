@@ -891,18 +891,26 @@ var LIFT_CHAIRS = 6;
 // chair with him lifted out.
 var RIDER_PARTS = ["leg-right", "leg-left", "head", "arm", "beer"];
 
+// Bump whenever tools/griffin-rig.py rewrites the art. The images keep their
+// names, so without this a browser that already has the old ones (GitHub
+// Pages says keep them 10 minutes) carries on showing them.
+var ART_VERSION = 2;
+function art(file) {
+    return "gifs/griffin/" + file + "?v=" + ART_VERSION;
+}
+
 function buildRider() {
     var rider = el("div", "gl-rider");
     rider.title = "griffin";
     var base = el("img", "glr-base");
-    base.src = "gifs/griffin/base.png";
+    base.src = art("base.png");
     base.alt = "";
     base.draggable = false;
     rider.appendChild(base);
     RIDER_PARTS.forEach(function(part) {
         var wrap = el("div", "glr-part glr-" + part);
         var img = el("img");
-        img.src = "gifs/griffin/" + part + ".png";
+        img.src = art(part + ".png");
         img.alt = "";
         img.draggable = false;
         wrap.appendChild(img);
@@ -922,7 +930,7 @@ function buildLift() {
             swing.appendChild(buildRider());
         } else {
             var empty = el("img", "gl-chair-empty");
-            empty.src = "gifs/griffin/empty-chair.png";
+            empty.src = art("empty-chair.png");
             empty.alt = "";
             empty.draggable = false;
             swing.appendChild(empty);
