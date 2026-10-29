@@ -33,7 +33,7 @@
     </script>
 
     <link rel="stylesheet" href="main.css?v=2">
-    <link rel="stylesheet" href="griffinland.css?v=8">
+    <link rel="stylesheet" href="griffinland.css?v=11">
     <!-- Jquery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -53,6 +53,52 @@
         <div id="mocial-icon-group" class="desktop-icon-group">
             <img src="music_note_spinning.gif" id="mocial-icon" alt="Mocial Icon" draggable="false">
             <div id="mocial-icon-label"><a href="#">mocial</a></div>
+        </div>
+
+        <!-- griffinland's own desktop toys - griffinland.js runs them all -->
+        <div id="virus-icon-group" class="desktop-icon-group gl-icon">
+            <img src="icons/virus.svg" alt="" draggable="false">
+            <div class="gl-icon-label"><a href="#">not-a-virus.exe</a></div>
+        </div>
+        <div id="guestbook-icon-group" class="desktop-icon-group gl-icon">
+            <img src="icons/guestbook.svg" alt="" draggable="false">
+            <div class="gl-icon-label"><a href="#">guestbook</a></div>
+        </div>
+        <div id="calculator-icon-group" class="desktop-icon-group gl-icon">
+            <img src="icons/calculator.svg" alt="" draggable="false">
+            <div class="gl-icon-label"><a href="#">calculator</a></div>
+        </div>
+        <div id="screensaver-icon-group" class="desktop-icon-group gl-icon">
+            <img src="icons/screensaver.svg" alt="" draggable="false">
+            <div class="gl-icon-label"><a href="#">screensaver</a></div>
+        </div>
+
+        <!-- The horizon: a white line-drawn treeline across the desktop, with
+             the dino out for his walk. Sits behind everything else. -->
+        <div id="gl-horizon" aria-hidden="true">
+            <svg class="gl-treeline" viewBox="0 0 1200 90" preserveAspectRatio="none">
+                <path d="M0 80 H1200"/>
+            </svg>
+            <div class="gl-trees"></div>
+            <img class="gl-dino" src="gifs/dino.png" alt="" draggable="false">
+            <div class="gl-birds"><span>v</span><span>v</span><span>v</span></div>
+        </div>
+
+        <!-- Web 1.0 badges, bottom left: hit counter, 88x31 buttons, the
+             under-construction sign and the griffinland webring -->
+        <div id="gl-badges">
+            <div class="gl-counter" aria-label="Visitor counter">
+                <span class="gl-counter-label">you are visitor #</span>
+                <span class="gl-counter-digits" id="gl-counter-digits"></span>
+            </div>
+            <div class="gl-badge-row">
+                <span class="gl-badge gl-badge-viewed">best viewed at<b>800&times;600</b>in Netscape Navigator</span>
+                <span class="gl-badge gl-badge-construction"><i class="gl-beacon"></i><b>UNDER<br>CONSTRUCTION</b></span>
+                <span class="gl-badge gl-badge-webring">
+                    <b>griffinland webring</b>
+                    <span><a href="https://mocial.org/">&laquo; prev</a> | <a href="#" id="gl-webring-random">random</a> | <a href="https://mocial.org/">next &raquo;</a></span>
+                </span>
+            </div>
         </div>
 
         <!-- Welcome: greets visitors as they reach the desktop - griffinland
@@ -270,6 +316,7 @@
       </div>
     </div>
     <script src="main.js?v=6"></script>
+    <script src="griffinland.js?v=1"></script>
 
 </body>
 </html>

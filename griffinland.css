@@ -691,3 +691,988 @@
         width: 100%;
     }
 }
+
+/* ===== Theme ===============================================================
+   griffinland's desktop is forest green where mocial's is teal - the one
+   change that tells you the desktop moved. The gate and the header follow
+   it so nothing flashes teal on the way in. */
+:root {
+    --gl-forest: #22743a;
+}
+body,
+header,
+html.gated body > header,
+html.gated body.dark-mode > header,
+#password-gate {
+    background: var(--gl-forest);
+}
+
+/* The typed "griffinland", a size up from mocial's title */
+#title {
+    font-size: 2.5em;
+    line-height: 1.2;
+}
+
+/* Icons stay above the horizon drawn behind them */
+.desktop-icon-group {
+    z-index: 2;
+}
+
+/* ===== Desktop icons ======================================================== */
+.gl-icon img {
+    position: absolute;
+    top: 0;
+    right: 28px;
+    width: 44px;
+    height: 44px;
+    image-rendering: pixelated;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+.gl-icon-label {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    width: 100px;
+    text-align: center;
+    font-family: 'W95FA', sans-serif;
+    font-size: 13px;
+    line-height: 1.2;
+}
+.gl-icon-label a {
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Two columns down the right edge, on the same 107px rows mocial uses */
+#virus-icon-group      { top: 181px; right: 10px; }
+#guestbook-icon-group  { top: 288px; right: 81px; }
+#calculator-icon-group { top: 288px; right: 10px; }
+#screensaver-icon-group { top: 395px; right: 10px; }
+
+/* ===== Window kit =========================================================== */
+.gl-window {
+    display: none;
+    text-align: left;
+}
+/* The shell splits the title bar 75/25, which wraps the buttons onto a second
+   line in a narrow window. griffinland's windows flex instead: buttons keep
+   their size and a long title trails off. */
+.gl-window .windows-header-wrapper {
+    display: flex;
+    align-items: center;
+}
+.gl-window .window-title {
+    float: none;
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.gl-window .window-icons {
+    float: none;
+    flex: 0 0 auto;
+    width: auto;
+}
+
+/* Undo the shell's full-width window images for griffinland's own windows */
+.gl-window .popup-inner-wrapper img {
+    width: auto;
+    max-width: 100%;
+    display: inline-block;
+}
+
+.gl-btn {
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+    min-width: 84px;
+    padding: 4px 12px;
+    background: #d8d8d8;
+    color: #000;
+    border: 2px outset #f0f0f0;
+    border-radius: 0;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+.gl-btn:active {
+    border-style: inset;
+}
+
+.gl-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* The ASCII-box call to action. Box-drawing characters only line up in a
+   monospace font, so this one button is Courier rather than Tahoma. */
+.gl-ascii-btn {
+    display: inline-block;
+    margin: 0;
+    padding: 2px 4px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 1.05;
+    white-space: pre;
+    color: #000080;
+    background: none;
+    border: none;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+.gl-ascii-btn:hover,
+.gl-ascii-btn:focus-visible {
+    color: #fff;
+    background: #000080;
+    outline: none;
+}
+
+/* ===== Menu bars ============================================================ */
+.gl-menubar {
+    display: flex;
+    gap: 2px;
+    padding: 2px 4px;
+    background: #ececec;
+    border-bottom: 1px solid #b8b8b8;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+    color: #000;
+    text-align: left;
+    user-select: none;
+}
+.gl-menubar-item {
+    position: relative;
+    padding: 1px 8px;
+    cursor: default;
+}
+.gl-menubar-item:hover,
+.gl-menubar-item.open {
+    background: rgb(51, 78, 165);
+    color: #fff;
+}
+.gl-menubar-item:focus-visible {
+    outline: 1px dotted #000;
+}
+
+.gl-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 5;
+    min-width: 190px;
+    padding: 2px;
+    background: #f2f2f2;
+    border: 2px outset #f8f8f8;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+    color: #000;
+}
+.gl-menu[hidden] {
+    display: none;
+}
+.gl-menu-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 3px 10px 3px 2px;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+    text-align: left;
+    color: #000;
+    background: none;
+    border: none;
+    cursor: default;
+}
+.gl-menu-row:hover:not([disabled]),
+.gl-menu-row:focus-visible {
+    background: rgb(51, 78, 165);
+    color: #fff;
+    outline: none;
+}
+.gl-menu-row[disabled] {
+    color: #8a8a8a;
+    text-shadow: 1px 1px 0 #fff;
+}
+.gl-menu-check {
+    width: 18px;
+    flex: 0 0 auto;
+    text-align: center;
+}
+.gl-menu-label {
+    flex: 1 1 auto;
+}
+.gl-menu-hint {
+    margin-left: 14px;
+    font-size: 11px;
+    font-style: italic;
+}
+.gl-menu-divider {
+    margin: 3px 2px;
+    border-top: 1px solid #a8a8a8;
+    border-bottom: 1px solid #fff;
+}
+
+/* ===== About ================================================================ */
+#about-window {
+    width: 360px;
+}
+.gl-about {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 16px;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+}
+#about-window .popup-inner-wrapper img.gl-about-icon {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 auto;
+    image-rendering: pixelated;
+}
+.gl-about-text {
+    flex: 1 1 200px;
+}
+.gl-about-name {
+    font-family: 'W95FA', sans-serif;
+    font-size: 22px;
+    line-height: 1.2;
+}
+.gl-about hr {
+    border: none;
+    border-top: 1px solid #c0c0c0;
+    margin: 8px 0;
+}
+.gl-about .gl-buttons {
+    flex: 1 1 100%;
+}
+
+/* ===== Sparkle trail ======================================================== */
+.gl-sparkle {
+    position: fixed;
+    z-index: 300000;
+    pointer-events: none;
+    line-height: 1;
+    text-shadow: 0 0 5px currentColor;
+    transform: translate(-50%, -50%);
+    animation: gl-sparkle-fall 0.9s ease-out forwards;
+}
+@keyframes gl-sparkle-fall {
+    from { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+    to { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + 34px)) scale(0.4) rotate(120deg); }
+}
+
+/* ===== not-a-virus.exe: the spam storm ====================================== */
+.gl-spam {
+    width: 260px;
+}
+.gl-spam .gl-body {
+    padding: 10px 12px 12px;
+    text-align: center;
+    background: #fffbe6;
+}
+.gl-spam-head {
+    font-family: "Times New Roman", Times, serif;
+    font-weight: 900;
+    font-style: italic;
+    font-size: 22px;
+    line-height: 1.05;
+    animation: gl-spam-flash 0.8s steps(1, end) infinite;
+}
+.gl-spam .popup-inner-wrapper img.gl-spam-img {
+    display: block;
+    max-width: 150px;
+    max-height: 90px;
+    margin: 8px auto;
+    image-rendering: auto;
+}
+.gl-spam-text {
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+    line-height: 1.35;
+}
+.gl-spam-btn {
+    margin-top: 10px;
+    padding: 5px 14px;
+    font-family: 'W95FA', sans-serif;
+    font-size: 15px;
+    color: #fff;
+    background: #d81b1b;
+    border: 3px outset #ff8a8a;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+    animation: gl-blink 0.7s steps(1, end) infinite;
+}
+.gl-spam-btn:active {
+    border-style: inset;
+}
+@keyframes gl-spam-flash {
+    0% { color: #d81b1b; }
+    50% { color: #1b3cd8; }
+}
+@keyframes gl-blink {
+    0% { background: #d81b1b; color: #fff; }
+    50% { background: #ffe14a; color: #d81b1b; }
+}
+
+/* On a phone the shell stacks windows in the page; the storm floats instead */
+@media screen and (max-width: 960px) {
+    body.mobile-stacked .popup-window.gl-spam {
+        position: fixed !important;
+        width: min(260px, 86vw) !important;
+        margin: 0 !important;
+    }
+}
+
+#antivirus-window {
+    width: 340px;
+}
+.gl-antivirus {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+}
+.gl-shield {
+    width: 48px;
+    flex: 0 0 auto;
+}
+.gl-antivirus-text {
+    flex: 1 1 180px;
+}
+.gl-antivirus-head {
+    font-weight: bold;
+    font-size: 15px;
+}
+.gl-antivirus-buttons {
+    flex: 1 1 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* ===== The parked spam ad =================================================== */
+#promo-window {
+    width: 240px;
+}
+.gl-promo .gl-body {
+    text-align: center;
+    padding-bottom: 12px;
+    background: #fff;
+}
+.gl-promo-marquee {
+    overflow: hidden;
+    background: #000;
+    color: #ffde59;
+    font-family: 'W95FA', sans-serif;
+    font-size: 13px;
+    padding: 3px 0;
+}
+.gl-promo-marquee span {
+    display: inline-block;
+    white-space: nowrap;
+    animation: gl-marquee 10s linear infinite;
+}
+@keyframes gl-marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+#promo-window .popup-inner-wrapper img.gl-promo-fire {
+    display: block;
+    width: 150px;
+    margin: 10px auto 4px;
+}
+.gl-promo-text {
+    padding: 0 12px;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+    line-height: 1.35;
+}
+.gl-promo-btn {
+    margin-top: 10px;
+    padding: 6px 16px;
+    font-family: 'W95FA', sans-serif;
+    font-size: 18px;
+    border: 3px outset #ff8a8a;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+    animation: gl-blink 0.6s steps(1, end) infinite;
+}
+.gl-promo-btn:active {
+    border-style: inset;
+}
+
+/* ===== Screensaver ========================================================== */
+.gl-saver {
+    position: fixed;
+    inset: 0;
+    z-index: 200000;
+    overflow: hidden;
+    background: #000 url('gifs/space.png') repeat;
+    animation: gl-stars 40s linear infinite;
+    cursor: none;
+}
+@keyframes gl-stars {
+    to { background-position: -288px 144px; }
+}
+.gl-saver-sprite {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: auto;
+    will-change: transform;
+    pointer-events: none;
+}
+.gl-saver-logo {
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-family: "Times New Roman", Times, serif;
+    font-weight: 900;
+    font-style: italic;
+    font-size: 52px;
+    line-height: 1;
+    white-space: nowrap;
+    color: #ffd84a;
+    text-shadow: 3px 3px 0 #000, 0 0 14px rgba(255, 255, 255, 0.5);
+    will-change: transform;
+}
+.gl-saver-corner {
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -50%);
+    font-family: 'W95FA', sans-serif;
+    font-size: 64px;
+    color: #fff;
+    text-shadow: 4px 4px 0 #d81b1b;
+    opacity: 0;
+    pointer-events: none;
+}
+.gl-saver-corner.show {
+    animation: gl-corner 1.8s ease-out;
+}
+@keyframes gl-corner {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(0.4); }
+    20% { transform: translate(-50%, -50%) scale(1.2); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* ===== Tip of the Day ======================================================= */
+#tips-window {
+    width: 440px;
+}
+.gl-tips .gl-body {
+    background: #d8d8d8;
+}
+.gl-tips-main {
+    display: flex;
+    gap: 14px;
+    padding: 16px 16px 10px;
+}
+#tips-window .popup-inner-wrapper img.gl-tips-bulb {
+    width: 52px;
+    height: auto;
+    flex: 0 0 auto;
+    align-self: flex-start;
+    image-rendering: pixelated;
+}
+.gl-tips-card {
+    flex: 1 1 auto;
+    min-height: 96px;
+    padding: 10px 12px;
+    background: #ffffe1;
+    border: 2px inset #d8d8d8;
+    font-family: Tahoma, Geneva, sans-serif;
+}
+.gl-tips-heading {
+    margin-bottom: 6px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 19px;
+    font-weight: bold;
+}
+.gl-tips-text {
+    font-size: 14px;
+    line-height: 1.45;
+}
+.gl-tips-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 4px 16px 14px;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+}
+.gl-tips-startup {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ===== Hit counter and web badges =========================================== */
+#gl-badges {
+    position: fixed;
+    left: 14px;
+    bottom: 46px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.gl-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px;
+    background: #000;
+    border: 2px inset #d8d8d8;
+    font-family: 'W95FA', sans-serif;
+    font-size: 12px;
+    color: #9fff9f;
+}
+.gl-counter-digits {
+    display: inline-flex;
+    gap: 1px;
+}
+/* Each digit is a window onto a strip of 0-9 that slides up into place */
+.gl-digit {
+    display: inline-block;
+    width: 0.72em;
+    height: 1em;
+    overflow: hidden;
+    background: #0f2a12;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1em;
+    text-align: center;
+    color: #3dff6a;
+}
+.gl-digit-strip {
+    display: block;
+    white-space: pre;
+    transition: transform 1.4s cubic-bezier(0.2, 0.9, 0.3, 1.05);
+}
+
+.gl-badge-row {
+    display: flex;
+    gap: 6px;
+}
+/* 88x31: the one true size of a web badge */
+.gl-badge {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 88px;
+    height: 31px;
+    box-sizing: border-box;
+    overflow: hidden;
+    border: 1px solid #000;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 8px;
+    line-height: 1.05;
+    text-align: center;
+}
+.gl-badge b {
+    font-size: 11px;
+}
+.gl-badge-viewed {
+    background: linear-gradient(180deg, #1c2a8a, #0b6e84);
+    color: #fff;
+}
+.gl-badge-construction {
+    background: repeating-linear-gradient(-45deg, #ffd400 0 7px, #111 7px 14px);
+    background-size: 200% 100%;
+    animation: gl-stripes 1.2s linear infinite;
+}
+.gl-badge-construction b {
+    padding: 1px 4px;
+    font-size: 8px;
+    font-weight: 900;
+    color: #000;
+    background: #ffd400;
+    border: 1px solid #000;
+}
+@keyframes gl-stripes {
+    to { background-position: -40px 0; }
+}
+.gl-beacon {
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ff6a00;
+    box-shadow: 0 0 6px 2px #ffae00;
+    animation: gl-beacon 0.9s steps(1, end) infinite;
+}
+@keyframes gl-beacon {
+    50% { opacity: 0.15; box-shadow: none; }
+}
+.gl-badge-webring {
+    background: #fff;
+    color: #000;
+}
+.gl-badge-webring b {
+    font-size: 9px;
+}
+.gl-badge-webring a {
+    color: #0000ee;
+    font-size: 8px;
+}
+
+/* ===== The horizon ========================================================== */
+#gl-horizon {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 38px;
+    height: 90px;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0.85;
+}
+html.gated #gl-horizon {
+    display: none;
+}
+.gl-treeline {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+.gl-treeline path,
+.gl-trees path {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+.gl-trees {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+.gl-trees svg {
+    display: block;
+}
+/* The dino, out for his walk along the line - one slow lap, bobbing */
+.gl-dino {
+    position: absolute;
+    bottom: 9px;
+    left: -60px;
+    height: 40px;
+    width: auto;
+    animation: gl-walk 90s linear infinite, gl-bob 0.5s steps(2, end) infinite;
+}
+@keyframes gl-walk {
+    from { left: -60px; }
+    to { left: 100%; }
+}
+@keyframes gl-bob {
+    50% { transform: translateY(-2px); }
+}
+.gl-birds {
+    position: absolute;
+    top: 6px;
+    left: 0;
+    animation: gl-birds 45s linear infinite;
+    color: #fff;
+    font-family: 'W95FA', sans-serif;
+    font-size: 14px;
+    letter-spacing: 10px;
+}
+.gl-birds span:nth-child(2) {
+    position: relative;
+    top: -6px;
+}
+@keyframes gl-birds {
+    from { transform: translateX(-80px); }
+    to { transform: translateX(100vw); }
+}
+
+/* On a phone the horizon gives way to the content, and the badges sit at the
+   end of the page instead of floating over it */
+@media screen and (max-width: 960px) {
+    #gl-horizon {
+        display: none;
+    }
+    body.mobile-stacked #gl-badges {
+        position: static;
+        order: 9999;
+        margin: 16px 10px;
+    }
+}
+
+/* ===== Calculator =========================================================== */
+#calculator-window {
+    width: 300px;
+}
+.gl-calc .gl-body {
+    background: #d8d8d8;
+    padding-bottom: 12px;
+}
+.gl-calc-display {
+    margin: 10px;
+    padding: 6px 10px;
+    overflow: hidden;
+    background: #c9dcb5;
+    border: 2px inset #d8d8d8;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 26px;
+    font-weight: bold;
+    text-align: right;
+    white-space: nowrap;
+    color: #203018;
+}
+.gl-calc-display.lucky {
+    animation: gl-lucky 0.9s ease-out;
+}
+@keyframes gl-lucky {
+    0% { background: #ffe680; }
+    100% { background: #c9dcb5; }
+}
+.gl-calc-keys {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+    padding: 0 10px;
+}
+.gl-calc-key {
+    padding: 7px 0;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 15px;
+    color: #000080;
+    background: #e8e8e8;
+    border: 2px outset #f8f8f8;
+    border-radius: 0;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+.gl-calc-key:active {
+    border-style: inset;
+}
+.gl-calc-red {
+    color: #c00000;
+}
+.gl-calc-gold {
+    background: #ffe680;
+    color: #8a4b00;
+}
+.gl-calc-wide {
+    grid-column: span 2;
+}
+
+/* ===== Guestbook ============================================================ */
+#guestbook-window {
+    width: 460px;
+}
+.gl-guestbook .gl-body {
+    max-height: min(560px, 68vh);
+    overflow-y: auto;
+    background: #fff;
+}
+@media screen and (max-width: 960px) {
+    .gl-guestbook .gl-body {
+        max-height: none;
+    }
+}
+.gl-gb-hero {
+    padding: 14px 12px 10px;
+    text-align: center;
+    background: #170a35 url('gifs/space.png') repeat;
+    color: #fff;
+}
+.gl-gb-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+#guestbook-window .gl-gb-title-row img {
+    height: 46px;
+}
+.gl-gb-title {
+    font-family: "Times New Roman", Times, serif;
+    font-weight: 900;
+    font-style: italic;
+    font-size: 30px;
+    line-height: 1.1;
+    color: transparent;
+    background: linear-gradient(180deg, #fff1fb 0%, #ff7ad9 45%, #ffd84a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-stroke: 1px #5a0b3a;
+    filter: drop-shadow(2px 2px 0 #000);
+}
+.gl-gb-sub {
+    margin: 6px 0 8px;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+}
+.gl-gb-cta .gl-ascii-btn {
+    color: #ffde59;
+}
+.gl-gb-cta .gl-ascii-btn:hover,
+.gl-gb-cta .gl-ascii-btn:focus-visible {
+    color: #2a0b4a;
+    background: #ffde59;
+}
+
+.gl-gb-form {
+    padding: 12px 14px;
+    background: #fffbe6;
+    border-bottom: 2px dashed #e0c080;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 12px;
+}
+.gl-gb-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+.gl-gb-form input:not([type=radio]),
+.gl-gb-form textarea {
+    display: block;
+    width: 100%;
+    margin-top: 3px;
+    padding: 3px 5px;
+    box-sizing: border-box;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+    background: #fff;
+    border: 2px inset #d8d8d8;
+    border-radius: 0;
+}
+.gl-gb-form textarea {
+    resize: vertical;
+}
+.gl-gb-moods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 0 0 8px;
+    padding: 6px;
+    border: 2px groove #f0e0c0;
+}
+.gl-gb-moods legend {
+    padding: 0 4px;
+    font-weight: bold;
+}
+.gl-gb-mood-pick input {
+    position: absolute;
+    opacity: 0;
+}
+#guestbook-window .gl-gb-mood-pick img {
+    display: block;
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+    padding: 3px;
+    border: 2px solid transparent;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+.gl-gb-mood-pick input:checked + img {
+    border: 2px dashed #a3133f;
+    background: #fff;
+}
+.gl-gb-mood-pick input:focus-visible + img {
+    outline: 1px dotted #000;
+}
+.gl-gb-error {
+    min-height: 16px;
+    color: #a00000;
+}
+
+.gl-gb-count {
+    padding: 8px;
+    text-align: center;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 12px;
+    font-style: italic;
+    color: #555;
+}
+.gl-gb-entries {
+    list-style: none;
+    margin: 0;
+    padding: 0 12px 14px;
+}
+.gl-gb-entry {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 10px;
+    background: #fff;
+    border: 2px ridge #c8b8e0;
+}
+.gl-gb-entry:nth-child(even) {
+    background: #f7f1ff;
+}
+#guestbook-window .popup-inner-wrapper img.gl-gb-mood {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    flex: 0 0 auto;
+}
+.gl-gb-entry-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-family: Tahoma, Geneva, sans-serif;
+}
+.gl-gb-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: #a3133f;
+}
+.gl-gb-from {
+    font-size: 12px;
+    font-weight: normal;
+    font-style: italic;
+    color: #555;
+}
+.gl-gb-date {
+    font-size: 11px;
+    color: #888;
+}
+.gl-gb-msg {
+    margin: 4px 0 0;
+    font-size: 13px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+.gl-gb-home {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #0000ee;
+    overflow-wrap: anywhere;
+}
+
+/* Less motion asked for: the desktop holds still */
+@media (prefers-reduced-motion: reduce) {
+    .gl-dino,
+    .gl-birds,
+    .gl-promo-marquee span,
+    .gl-badge-construction,
+    .gl-beacon,
+    .gl-spam-head,
+    .gl-spam-btn,
+    .gl-promo-btn,
+    .gl-saver {
+        animation: none;
+    }
+    .gl-dino {
+        left: 30%;
+    }
+}
