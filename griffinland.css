@@ -1368,6 +1368,16 @@ html.gated #gl-horizon {
 .gl-trees svg {
     display: block;
 }
+/* The towers sit between the treeline and the chairs, at full strength */
+.gl-towers {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+.gl-towers svg {
+    display: block;
+    overflow: visible;
+}
 /* The dino, out for his walk along the line - one slow lap, bobbing */
 .gl-dino {
     position: absolute;

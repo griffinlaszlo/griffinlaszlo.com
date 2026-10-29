@@ -774,8 +774,9 @@ document.getElementById("gl-webring-random").addEventListener("click", function(
 
 // ===== The horizon ===========================================================
 // A white line-drawn treeline across the bottom of the desktop, with a
-// chairlift running over it: the cable and its towers are drawn in with the
-// trees, and the chairs (one of them carrying griffin) ride along on top.
+// chairlift running over it: the cable is drawn in with the trees, the
+// towers are doodled in colour on their own layer, and the chairs (one of
+// them carrying griffin) ride along on top.
 // Redrawn to fit whenever the window changes size.
 
 var GROUND_Y = 160;              // the ground line, in the horizon's 170px
@@ -814,20 +815,70 @@ function drawTrees() {
         x += rand(70, 190);
     }
 
-    // The lift: one cable climbing gently left to right...
-    d += " M0 " + cableY(0, W) + " L" + W + " " + cableY(W, W);
-    // ...held up by towers - a tapered pole, a cross-arm and two sheaves
-    for (var t = 170; t < W; t += 380) {
-        var cy = cableY(t, W);
-        d += " M" + (t - 5) + " " + base + " L" + (t - 2) + " " + (cy + 6) +
-             " M" + (t + 5) + " " + base + " L" + (t + 2) + " " + (cy + 6) +
-             " M" + (t - 4) + " " + (base - 30) + " H" + (t + 4) +
-             " M" + (t - 3) + " " + (base - 70) + " H" + (t + 3) +
-             " M" + (t - 16) + " " + (cy + 6) + " H" + (t + 16) +
-             " M" + (t - 11) + " " + (cy + 6) + " V" + (cy + 2) + " M" + (t + 11) + " " + (cy + 6) + " V" + (cy + 2);
-    }
-
     holder.innerHTML = '<svg viewBox="0 0 ' + W + ' 170" width="' + W + '" height="170"><path d="' + d + '"/></svg>';
+
+    // The lift's towers, drawn in their own layer so they can be coloured...
+    var towers = document.querySelector("#gl-horizon .gl-towers");
+    if (towers) {
+        var art = "";
+        for (var t = 170; t < W; t += 380) art += towerSVG(t, cableY(t, W), base);
+        // ...and the cable, climbing gently left to right over their wheels
+        art += '<path d="M0 ' + cableY(0, W) + ' L' + W + ' ' + cableY(W, W) + '" stroke="#fff" stroke-width="2" fill="none"/>';
+        towers.innerHTML =
+            '<svg viewBox="0 0 ' + W + ' 170" width="' + W + '" height="170">' +
+                // A touch of wobble on every line, so they look hand-drawn
+                '<filter id="gl-doodle"><feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="7"/>' +
+                '<feDisplacementMap in="SourceGraphic" scale="1.8"/></filter>' +
+                '<g filter="url(#gl-doodle)">' + art + '</g>' +
+            '</svg>';
+    }
+}
+
+// One lift tower, doodled to sit with the chair art: a blue pole in black ink
+// with a highlight and a ladder up its side, a yellow pad and a concrete
+// footing at the bottom, and at the top a braced cross-arm carrying the train
+// of wheels the cable rides over. t is the tower's x, cy the cable's height
+// there and base the ground line.
+var TOWER_INK = "#1d1b1b";
+var TOWER_BLUE = "#2b74b3";
+function towerSVG(t, cy, base) {
+    var poleTop = cy + 12;
+    var armY = cy + 10;
+    var wide = 7, narrow = 4.5;      // half-widths: the pole tapers as it rises
+    var ink = ' stroke="' + TOWER_INK + '" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"';
+    var svg = "";
+
+    // footing and the yellow safety pad round the base
+    svg += '<rect x="' + (t - 11) + '" y="' + (base - 6) + '" width="22" height="7" fill="#c9c2b2"' + ink + '/>';
+    // the pole
+    svg += '<path d="M' + (t - narrow) + ' ' + poleTop + ' L' + (t + narrow) + ' ' + poleTop +
+           ' L' + (t + wide) + ' ' + (base - 6) + ' L' + (t - wide) + ' ' + (base - 6) + ' Z" fill="' + TOWER_BLUE + '"' + ink + '/>';
+    svg += '<path d="M' + (t - narrow + 2) + ' ' + (poleTop + 5) + ' L' + (t - wide + 2.5) + ' ' + (base - 28) + '" stroke="#8cc3ea" stroke-width="1.6" stroke-linecap="round"/>';
+    svg += '<rect x="' + (t - wide - 1.5) + '" y="' + (base - 26) + '" width="' + (wide * 2 + 3) + '" height="18" rx="2" fill="#f2c230"' + ink + '/>';
+    // the ladder up its right side
+    var lx = t + wide + 3;
+    svg += '<path d="M' + (lx - 1) + ' ' + (poleTop + 18) + ' L' + (lx + 0.5) + ' ' + (base - 28) +
+           ' M' + (lx + 4) + ' ' + (poleTop + 18) + ' L' + (lx + 5.5) + ' ' + (base - 28) + '" stroke="' + TOWER_INK + '" stroke-width="1" fill="none"/>';
+    var rungs = "";
+    for (var y = poleTop + 22; y < base - 30; y += 7) {
+        var f = (y - poleTop) / (base - poleTop);
+        rungs += ' M' + (lx - 1 + 1.5 * f) + ' ' + y + ' H' + (lx + 4 + 1.5 * f);
+    }
+    svg += '<path d="' + rungs + '" stroke="' + TOWER_INK + '" stroke-width="1"/>';
+    // braces from the pole out to the ends of the cross-arm: ink under blue
+    var braces = 'M' + (t - 2) + ' ' + (poleTop + 14) + ' L' + (t - 19) + ' ' + (armY + 2) +
+                 ' M' + (t + 2) + ' ' + (poleTop + 14) + ' L' + (t + 19) + ' ' + (armY + 2);
+    svg += '<path d="' + braces + '" stroke="' + TOWER_INK + '" stroke-width="5" stroke-linecap="round" fill="none"/>';
+    svg += '<path d="' + braces + '" stroke="' + TOWER_BLUE + '" stroke-width="2.4" stroke-linecap="round" fill="none"/>';
+    // the cross-arm
+    svg += '<rect x="' + (t - 26) + '" y="' + (armY - 3) + '" width="52" height="6" rx="1.5" fill="' + TOWER_BLUE + '"' + ink + '/>';
+    // the wheel train: a grey bar, and four wheels whose tops carry the cable
+    svg += '<rect x="' + (t - 21) + '" y="' + (cy + 4) + '" width="42" height="4" rx="1" fill="#cfcfcf"' + ink + '/>';
+    for (var k = -1.5; k <= 1.5; k++) {
+        svg += '<circle cx="' + (t + k * 10) + '" cy="' + (cy + 3.2) + '" r="3.4" fill="#f4f4f4"' + ink + '/>' +
+               '<circle cx="' + (t + k * 10) + '" cy="' + (cy + 3.2) + '" r="0.9" fill="' + TOWER_INK + '"/>';
+    }
+    return svg;
 }
 
 var LIFT_CHAIRS = 6;

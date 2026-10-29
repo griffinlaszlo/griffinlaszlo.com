@@ -97,11 +97,15 @@ headings in `griffinland.css`. The desktop is forest green (`--gl-forest`).
   fall. On by default, toggled in View.
 - **The horizon** - a white treeline drawn to fit the window, with a
   chairlift running over it, the dino walking along the ground and birds
-  going over.
+  going over. The lift towers are doodled in colour to sit with the chair art
+  (`towerSVG()`: blue pole, ladder, yellow pad, braced cross-arm and the wheel
+  train the cable rides over), with a wobble filter on every line.
 - **griffin, on the lift** - one chair carries griffin, animated from his own
   chairlift art; the other chairs are the same chair, empty.
   `tools/griffin-rig.py` cuts the drawing into layers - chair and body, each
-  leg and ski, head, shaka arm, beer hand - and makes the empty chair. He
+  leg and ski, head, shaka arm, beer hand - and makes the empty chair (the
+  seat and backrest redrawn whole, and the right armrest bar his ski hid
+  drawn back in to match the left). He
   rests by default (arm on the chair back, skis dangling); every few seconds
   griffinland.js picks one thing for him to do - a sip, a shaka, sometimes
   both, or a look around (the `ACTIONS` list) - and griffinland.css eases
