@@ -1335,13 +1335,10 @@ html.gated body.dark-mode > header,
     z-index: 1;
     pointer-events: none;
 }
-/* The scenery sits back a touch; griffin and his speech bubbles don't, which
-   is why the fade is here rather than on #gl-horizon itself. No overflow
-   clipping either - his bubbles rise above the strip, and as a fixed element
-   it can't add scrollbars. */
+/* The line-drawn scenery sits back a touch; the chairs don't, which is why
+   the fade is here rather than on #gl-horizon itself. */
 .gl-treeline,
 .gl-trees,
-.gl-chair:not(.gl-chair-griffin),
 .gl-dino,
 .gl-birds {
     opacity: 0.85;
@@ -1410,25 +1407,18 @@ html.gated #gl-horizon {
     top: 32px;
     animation: gl-ride 70s linear infinite;
 }
+/* Every chair is griffin's chair art: its hanger clamp (49% across, 5% down
+   the 84px picture) is what sits on the cable */
 .gl-chair-swing {
     transform-origin: 50% 0;
-    margin-left: -17px;   /* centers the 34px chair's hanger on the cable */
-    animation: gl-swing 3.2s ease-in-out infinite alternate;
-}
-.gl-chair-swing path {
-    fill: none;
-    stroke: #fff;
-    stroke-width: 2;
-    stroke-linejoin: round;
-}
-.gl-chair-swing svg {
-    display: block;
-}
-/* griffin's chair: his art's hanger clamp (49% across, 5% down) sits on the
-   cable. The rig itself is styled in "griffin, on the lift" below. */
-.gl-chair-griffin .gl-chair-swing {
     margin-left: -41px;
     margin-top: -4px;
+    animation: gl-swing 3.2s ease-in-out infinite alternate;
+}
+.gl-chair-empty {
+    display: block;
+    width: 84px;
+    height: 89px;
 }
 @keyframes gl-ride {
     from { left: -80px; top: 32px; }
@@ -1735,106 +1725,91 @@ html.gated #gl-horizon {
 }
 
 /* ===== griffin, on the lift =================================================
-   His chairlift art, cut into layers that all share one canvas: the chair and
-   his body (base), each leg with its ski, his head, the shaka arm and the hand
-   holding the beer. Each part turns on its own joint - the transform-origins
-   are those joints, as a share of the canvas - and the moves are in % of it
-   too, so they hold at any size.
+   His chairlift art, cut into layers that all share one canvas (see
+   tools/griffin-rig.py): the chair and his body, each leg with its ski, his
+   head, the shaka arm and the hand holding the beer. Each part turns on its
+   own joint - the transform-origins are those joints, as a share of the
+   canvas - and moves in % of it, so the poses hold at any size.
 
-   One 14s routine, every part keyed to the same clock: he looks left, shakes
-   the shaka, rests his arm on the chair back, looks right, takes a couple of
-   gulps of his beer, glances around. His skis swing the whole time. Hover
-   and he raises the beer to you. */
+   Each part is a wrapper holding his pose, around an image that can wiggle
+   on top of it. Resting is the default: arm draped on the chair back, beer
+   in hand. griffinland.js adds a class for a few seconds at a time - sip,
+   shaka (sometimes both), look-left, look-right, or cheers on hover - and
+   every pose eases in and back out, so he never snaps. */
 .gl-rider {
     position: relative;
     width: 84px;
     height: 89px;
     pointer-events: auto;
 }
-.gl-rider img {
+.gl-rider img,
+.glr-part {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
 }
+.glr-part {
+    transition: transform 0.7s ease-in-out;
+}
 
-.glr-head { transform-origin: 43.1% 43.3%; animation: glr-head 14s ease-in-out infinite; }
-.glr-arm  { transform-origin: 54% 43.5%;   animation: glr-arm 14s ease-in-out infinite; }
-.glr-beer { transform-origin: 33.5% 51.5%; animation: glr-beer 14s ease-in-out infinite; }
-/* The skis swing on their own rhythm, out of step with each other */
-.glr-leg-left  { transform-origin: 50.6% 55.6%; animation: glr-leg-left 1.7s ease-in-out infinite alternate; }
-.glr-leg-right { transform-origin: 69% 54.4%;   animation: glr-leg-right 2.1s ease-in-out infinite alternate; }
+/* The joints, shared by each wrapper and the image inside it */
+.glr-head, .glr-head img { transform-origin: 43.1% 43.3%; }
+.glr-arm, .glr-arm img   { transform-origin: 54% 43.5%; }
+.glr-beer, .glr-beer img { transform-origin: 33.5% 51.5%; }
+.glr-leg-left, .glr-leg-left img   { transform-origin: 50.6% 55.6%; }
+.glr-leg-right, .glr-leg-right img { transform-origin: 69% 54.4%; }
 
-@keyframes glr-head {
-    0%, 8%   { transform: none; }
-    12%, 24% { transform: translateX(-0.5%) rotate(-8deg); }    /* looks left */
-    28%, 32% { transform: none; }
-    36%, 46% { transform: translateX(0.4%) rotate(6deg); }      /* looks right */
-    50%      { transform: none; }
-    56%, 67% { transform: rotate(-6deg); }                      /* head back for a sip */
-    72%, 84% { transform: none; }
-    88%, 94% { transform: translateX(-0.3%) rotate(-4deg); }    /* a glance */
-    100%     { transform: none; }
-}
-@keyframes glr-arm {
-    0%, 14%  { transform: none; }                               /* shaka */
-    17%      { transform: rotate(-14deg); }                     /* ...shaken */
-    19%      { transform: rotate(-4deg); }
-    21%      { transform: rotate(-14deg); }
-    23%      { transform: rotate(-4deg); }
-    26%      { transform: none; }
-    32%, 48% { transform: rotate(48deg); }                      /* resting on the chair back */
-    54%, 78% { transform: none; }
-    81%      { transform: rotate(-12deg); }
-    83%      { transform: rotate(-3deg); }
-    85%      { transform: rotate(-12deg); }
-    88%      { transform: none; }
-    100%     { transform: none; }
-}
-@keyframes glr-beer {
-    0%, 52%  { transform: none; }
-    57%      { transform: translate(4.5%, -4.3%) rotate(38deg); }  /* to his mouth */
-    60%      { transform: translate(4.5%, -4.3%) rotate(45deg); }  /* gulp */
-    63%      { transform: translate(4.5%, -4.3%) rotate(38deg); }
-    65%      { transform: translate(4.5%, -4.3%) rotate(45deg); }  /* gulp */
-    67%      { transform: translate(4.5%, -4.3%) rotate(38deg); }
-    72%, 100% { transform: none; }
-}
+/* Resting: arm down on the chair back */
+.glr-arm { transform: rotate(48deg); }
+
+/* Skis dangle the whole time, out of step with each other */
+.glr-leg-left img  { animation: glr-leg-left 1.9s ease-in-out infinite alternate; }
+.glr-leg-right img { animation: glr-leg-right 2.3s ease-in-out infinite alternate; }
 @keyframes glr-leg-left {
-    from { transform: rotate(-4deg); }
-    to { transform: rotate(6deg); }
+    from { transform: rotate(-7deg); }
+    to { transform: rotate(10deg); }
 }
 @keyframes glr-leg-right {
-    from { transform: rotate(4deg); }
-    to { transform: rotate(-6deg); }
+    from { transform: rotate(7deg); }
+    to { transform: rotate(-10deg); }
 }
 
-/* Hover: cheers! The beer goes up and bobs, he leans in, the shaka waves */
-.gl-rider:hover .glr-beer {
-    animation: glr-cheers 0.8s ease-in-out infinite alternate;
+/* Looking around */
+.gl-rider.look-left .glr-head  { transform: translateX(-0.5%) rotate(-8deg); }
+.gl-rider.look-right .glr-head { transform: translateX(0.4%) rotate(6deg); }
+
+/* Shaka: the arm comes up off the chair back, then gives it a shake */
+.gl-rider.shaka .glr-arm { transform: none; }
+.gl-rider.shaka .glr-arm img { animation: glr-shake 0.45s ease-in-out 0.7s 4 alternate; }
+@keyframes glr-shake {
+    from { transform: none; }
+    to { transform: rotate(-12deg); }
 }
-.gl-rider:hover .glr-head {
-    animation: none;
-    transform: rotate(4deg);
+
+/* Sip: bottle to his mouth, head back, a few gulps */
+.gl-rider.sip .glr-beer { transform: translate(4.5%, -4.3%) rotate(38deg); }
+.gl-rider.sip .glr-head { transform: rotate(-6deg); }
+.gl-rider.sip .glr-beer img { animation: glr-gulp 0.45s ease-in-out 0.8s 4 alternate; }
+@keyframes glr-gulp {
+    from { transform: none; }
+    to { transform: rotate(7deg); }
 }
-.gl-rider:hover .glr-arm {
-    animation: glr-wave 0.5s ease-in-out infinite alternate;
-}
-@keyframes glr-cheers {
-    from { transform: translate(-0.5%, -5.4%) rotate(-12deg); }
-    to { transform: translate(-0.5%, -6.6%) rotate(-5deg); }
-}
-@keyframes glr-wave {
-    from { transform: rotate(-14deg); }
-    to { transform: rotate(-3deg); }
+
+/* Cheers, on hover: the beer goes up and bobs, and he leans in */
+.gl-rider.cheers .glr-beer { transform: translate(-0.5%, -5.4%) rotate(-12deg); }
+.gl-rider.cheers .glr-head { transform: rotate(4deg); }
+.gl-rider.cheers .glr-beer img { animation: glr-bob 0.8s ease-in-out 0.7s infinite alternate; }
+@keyframes glr-bob {
+    from { transform: none; }
+    to { transform: translateY(-1.2%) rotate(6deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .gl-rider img,
-    .gl-rider:hover img {
-        animation: none;
+    .glr-part {
+        transition: none;
     }
-    .gl-rider:hover .glr-beer {
-        transform: translate(-0.5%, -5.4%) rotate(-12deg);
+    .gl-rider img {
+        animation: none !important;
     }
 }

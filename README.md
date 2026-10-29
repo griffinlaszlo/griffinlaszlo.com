@@ -99,11 +99,13 @@ headings in `griffinland.css`. The desktop is forest green (`--gl-forest`).
   chairlift running over it, the dino walking along the ground and birds
   going over.
 - **griffin, on the lift** - one chair carries griffin, animated from his own
-  chairlift art. `tools/griffin-rig.py` cuts the drawing into layers - chair
-  and body, each leg and ski, head, shaka arm, beer hand - and griffinland.css
-  moves them on one 14s routine: he looks around, shakes the shaka, rests his
-  arm on the chair back, and takes a couple of gulps of beer, skis swinging
-  the whole time. Hover and he raises the beer in a cheers.
+  chairlift art; the other chairs are the same chair, empty.
+  `tools/griffin-rig.py` cuts the drawing into layers - chair and body, each
+  leg and ski, head, shaka arm, beer hand - and makes the empty chair. He
+  rests by default (arm on the chair back, skis dangling); every few seconds
+  griffinland.js picks one thing for him to do - a sip, a shaka, sometimes
+  both, or a look around (the `ACTIONS` list) - and griffinland.css eases
+  each pose in and back out. Hover and he raises the beer in a cheers.
 - **Calculator** - works like the Windows one, plus a lucky key.
 - **Guestbook** - sign it, pick a mood gif, see everyone's notes. Entries live
   in a Supabase table: `supabase/guestbook.sql` creates it (run it once in the

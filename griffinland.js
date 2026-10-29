@@ -830,18 +830,35 @@ function drawTrees() {
     holder.innerHTML = '<svg viewBox="0 0 ' + W + ' 170" width="' + W + '" height="170"><path d="' + d + '"/></svg>';
 }
 
-// An empty chair in the same white line art as the trees: the hanger, the
-// bar, the seat and a footrest
-var EMPTY_CHAIR_SVG =
-    '<svg viewBox="0 0 40 52" width="34" height="44">' +
-        '<path d="M20 1 V16 M9 16 H31 M9 16 V36 M31 16 V36 M5 36 H35 M5 36 V41 H35 V36 M11 41 V49 H29 V41"/>' +
-    '</svg>';
 var LIFT_CHAIRS = 6;
 
-// griffin's chair is his chairlift art cut into layers (gifs/griffin/), all
-// the same size so they stack exactly; griffinland.css moves the parts. The
-// order is back to front.
-var RIDER_PARTS = ["base", "leg-right", "leg-left", "head", "arm", "beer"];
+// griffin's chair is his chairlift art cut into layers (gifs/griffin/, made
+// by tools/griffin-rig.py), all the same size so they stack exactly, back to
+// front. The base doesn't move; each other part sits in its own wrapper,
+// which holds his pose for the moment, around an image that can wiggle on
+// top of it (a shaka being shaken, a gulp). The other chairs are the same
+// chair with him lifted out.
+var RIDER_PARTS = ["leg-right", "leg-left", "head", "arm", "beer"];
+
+function buildRider() {
+    var rider = el("div", "gl-rider");
+    rider.title = "griffin";
+    var base = el("img", "glr-base");
+    base.src = "gifs/griffin/base.png";
+    base.alt = "";
+    base.draggable = false;
+    rider.appendChild(base);
+    RIDER_PARTS.forEach(function(part) {
+        var wrap = el("div", "glr-part glr-" + part);
+        var img = el("img");
+        img.src = "gifs/griffin/" + part + ".png";
+        img.alt = "";
+        img.draggable = false;
+        wrap.appendChild(img);
+        rider.appendChild(wrap);
+    });
+    return rider;
+}
 
 function buildLift() {
     var lift = document.querySelector("#gl-horizon .gl-lift");
@@ -850,20 +867,14 @@ function buildLift() {
         var chair = el("div", "gl-chair");
         var swing = el("div", "gl-chair-swing");
         if (i === 0) {
-            // griffin, riding up with a drink
             chair.classList.add("gl-chair-griffin");
-            var rider = el("div", "gl-rider");
-            rider.title = "griffin";
-            RIDER_PARTS.forEach(function(part) {
-                var img = el("img", "glr-" + part);
-                img.src = "gifs/griffin/" + part + ".png";
-                img.alt = "";
-                img.draggable = false;
-                rider.appendChild(img);
-            });
-            swing.appendChild(rider);
+            swing.appendChild(buildRider());
         } else {
-            swing.innerHTML = EMPTY_CHAIR_SVG;
+            var empty = el("img", "gl-chair-empty");
+            empty.src = "gifs/griffin/empty-chair.png";
+            empty.alt = "";
+            empty.draggable = false;
+            swing.appendChild(empty);
         }
         // Spread evenly along the cable, each a slice of the trip ahead
         chair.style.animationDelay = (-LIFT_SECONDS * i / LIFT_CHAIRS) + "s";
@@ -885,6 +896,77 @@ window.addEventListener("resize", function() {
     clearTimeout(treeTimer);
     treeTimer = setTimeout(drawTrees, 200);
 });
+
+// ===== griffin, on the lift ==================================================
+// Most of the time he's resting: arm draped on the chair back, beer in hand,
+// skis dangling. Every few seconds he does one thing - a sip, a shaka, now
+// and then both at once, or a look around - and then settles back. Hover and
+// he raises the beer to you; move away and he eases back to resting. The
+// poses themselves are in griffinland.css; this only picks which one.
+(function setUpRider() {
+    var rider = document.querySelector(".gl-rider");
+    if (!rider) return;
+
+    var ACTIONS = [
+        { classes: ["sip"], ms: 3000, weight: 3 },
+        { classes: ["shaka"], ms: 2800, weight: 3 },
+        { classes: ["sip", "shaka"], ms: 3300, weight: 1 },
+        { classes: ["look-left"], ms: 2400, weight: 2 },
+        { classes: ["look-right"], ms: 2400, weight: 2 }
+    ];
+    var current = [];
+    var last = null;
+    var hovering = false;
+    var timer = null;
+
+    function settle() {
+        current.forEach(function(c) { rider.classList.remove(c); });
+        current = [];
+    }
+
+    // Weighted, and never the same thing twice running
+    function pickAction() {
+        var total = 0;
+        ACTIONS.forEach(function(a) { if (a !== last) total += a.weight; });
+        var roll = Math.random() * total;
+        for (var i = 0; i < ACTIONS.length; i++) {
+            if (ACTIONS[i] === last) continue;
+            roll -= ACTIONS[i].weight;
+            if (roll < 0) return ACTIONS[i];
+        }
+        return ACTIONS[0];
+    }
+
+    function next() {
+        if (hovering || document.hidden || isGated()) {
+            timer = setTimeout(next, 2000);
+            return;
+        }
+        var action = last = pickAction();
+        current = action.classes.slice();
+        current.forEach(function(c) { rider.classList.add(c); });
+        timer = setTimeout(function() {
+            settle();
+            timer = setTimeout(next, rand(2500, 5500));
+        }, action.ms);
+    }
+
+    rider.addEventListener("mouseenter", function() {
+        hovering = true;
+        clearTimeout(timer);
+        settle();
+        rider.classList.add("cheers");
+    });
+    rider.addEventListener("mouseleave", function() {
+        hovering = false;
+        rider.classList.remove("cheers");
+        timer = setTimeout(next, 3000);
+    });
+
+    // Holding still for anyone who's asked for less motion: he rests, and
+    // only the hover cheers (a pose, not an animation) still happens
+    if (!REDUCED_MOTION) timer = setTimeout(next, rand(1500, 4000));
+})();
 
 // ===== Calculator ============================================================
 // Works like the Windows one (each operator applies to the running total), with

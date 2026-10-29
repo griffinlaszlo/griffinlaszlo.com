@@ -5,7 +5,8 @@
 #
 # Run:  python3 tools/griffin-rig.py [path/to/griffinchairlift.png]
 # Needs numpy and opencv-python-headless (for the inpainting) plus Pillow.
-# Writes gifs/griffin/*.png at 252x266 - 3x the 84px it's shown at.
+# Writes gifs/griffin/*.png at 252x266 - 3x the 84px it's shown at - plus
+# empty-chair.png, the same chair with him lifted out.
 import os, sys
 import numpy as np, cv2
 from PIL import Image, ImageDraw, ImageFilter
@@ -88,3 +89,85 @@ os.makedirs(OUT, exist_ok=True)
 for k, a in layers.items():
     Image.fromarray(a).resize((252, 266), Image.LANCZOS).save(os.path.join(OUT, k + '.png'), optimize=True)
 print('wrote', len(layers), 'layers to', os.path.normpath(OUT))
+
+# ===== The empty chair ======================================================
+# The same chair with griffin lifted out, for the lift's other chairs.
+#   1. Find him: his colours (jacket, helmet, skin, goggles, bottle), the big
+#      dark trouser shapes, and the part outlines above (gloves, skis).
+#   2. Where he hid the seat and backrest, redraw them: slats between the
+#      edges the visible parts of the chair follow, in the art's line weight
+#      and its see-through marker grey.
+#   3. Anywhere else he covered is open air - except where his right ski
+#      crossed the frame's right-hand loop, which is bridged by inpainting.
+def empty_chair(arr):
+    alpha = arr[:, :, 3]
+    hsv = cv2.cvtColor(np.ascontiguousarray(arr[:, :, :3]), cv2.COLOR_RGB2HSV).astype(int)
+    s, v = hsv[:, :, 1], hsv[:, :, 2]
+    colourful = (s > 70) & (alpha > 0)
+    dark = ((v < 60) & (alpha > 0)).astype(np.uint8)
+    dark_big = cv2.morphologyEx(dark, cv2.MORPH_OPEN, np.ones((9, 9), np.uint8)) > 0
+    fig = colourful | dark_big
+    m = Image.new('L', (W, H), 0)
+    for poly in PARTS.values():
+        ImageDraw.Draw(m).polygon(poly, fill=255)
+    fig |= np.array(m) > 127
+    # he sits inside the chair: nothing of him reaches the frame's top rail or
+    # posts, so keep the colour test off them (the frame's grey has a tint)
+    yy, xx = np.mgrid[0:H, 0:W]
+    fig &= ~((yy < 215) | (xx < 80) | ((xx < 265) & (yy < 300)) | ((xx > 598) & (yy < 405)))
+    fig = cv2.dilate(fig.astype(np.uint8), np.ones((7, 7), np.uint8)) > 0
+    fig = cv2.morphologyEx(fig.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((15, 15), np.uint8)) > 0
+
+    # --- 2. the seat and backrest, redrawn where he hid them --------------------
+    def lerp_line(a, b, t):
+        return [(ax + (bx - ax) * t, ay + (by - ay) * t) for (ax, ay), (bx, by) in zip(a, b)]
+
+    xs = [88, 260, 440, 540, 640]
+    back_top = list(zip(xs, [418, 409, 396, 381, 366]))
+    back_bot = list(zip(xs, [467, 461, 447, 441, 436]))
+    seat_bot = list(zip(xs, [566, 596, 578, 562, 549]))
+    slats = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(slats)
+    d.polygon(back_top + back_bot[::-1], fill=(146, 146, 146, 255))   # the drawing's own grey
+    d.polygon(back_bot + seat_bot[::-1], fill=(146, 146, 146, 255))
+    bar_top = lerp_line(back_bot, seat_bot, 0.8)
+    d.polygon(bar_top + seat_bot[::-1], fill=(158, 158, 158, 255))       # the seat's front bar
+    INK = (30, 27, 27, 255)
+    for t in (0.33, 0.66):
+        d.line(lerp_line(back_top, back_bot, t), fill=INK, width=3, joint='curve')
+    d.line(back_bot, fill=INK, width=3, joint='curve')
+    for t in (0.2, 0.4, 0.6):
+        d.line(lerp_line(back_bot, seat_bot, t), fill=INK, width=3, joint='curve')
+    d.line(bar_top, fill=INK, width=3, joint='curve')
+    d.line(seat_bot, fill=INK, width=3, joint='curve')
+    slats = np.array(slats)
+    # The drawing's marker greys are see-through (alpha ~210, varying with the
+    # grain), so the fill is too - opaque grey looked flat next to the original
+    rng = np.random.default_rng(1)
+    grain = cv2.GaussianBlur(rng.normal(0, 9, (H, W)), (0, 0), 1.2)
+    see = cv2.GaussianBlur(rng.normal(0, 28, (H, W)), (0, 0), 1.5)
+    filled = (slats[:, :, 3] > 0) & (slats[:, :, 0] > 100)
+    slats[filled, :3] = np.clip(slats[filled, :3].astype(float) + grain[filled][:, None], 0, 255).astype(np.uint8)
+    slats[filled, 3] = np.clip(212 + see[filled], 150, 252).astype(np.uint8)
+
+    # --- 3. put it together ------------------------------------------------------
+    rgb = arr[:, :, :3].copy()
+    rgb[alpha < 20] = 255
+    hole = fig.astype(np.uint8) * 255
+    rgb_f = cv2.inpaint(np.ascontiguousarray(rgb[:, :, ::-1]), hole, 9, cv2.INPAINT_TELEA)[:, :, ::-1]
+    a_f = cv2.inpaint(alpha, hole, 9, cv2.INPAINT_TELEA)
+    out = arr.copy()
+    inside = fig & (slats[:, :, 3] > 0)
+    out[inside] = slats[inside]
+    # Everything else he covered is open air - except where his right ski
+    # crossed the frame's right-hand loop, which gets bridged from either side
+    rest = fig & ~inside
+    bridge = rest & (xx > 600) & (yy > 380) & (yy < 530)
+    out[rest, 3] = 0
+    out[bridge, :3] = rgb_f[bridge]
+    out[bridge, 3] = np.where(a_f[bridge] > 160, 255, 0)
+    return out
+
+empty = empty_chair(arr)
+Image.fromarray(empty).resize((252, 266), Image.LANCZOS).save(os.path.join(OUT, 'empty-chair.png'), optimize=True)
+print('wrote the empty chair')
