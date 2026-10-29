@@ -112,15 +112,51 @@ function hashPassword(str) {
     input.focus();
 })();
 
+// ===== Games at the gate ====================================================
+// griffinland: two games flank the password dialog, and both win the
+// password - hangman on the right, dice on the left. Writing the word here in
+// the clear gives nothing away: the games hand it to anyone who plays.
+var GATE_WORD = "CREATE";
+
+// A finished game puts the password into the dialog, so the visitor only has
+// to hit OK
+function fillPassword() {
+    document.getElementById("site-password").value = GATE_WORD.toLowerCase();
+    document.getElementById("password-error").textContent = "";
+    document.getElementById("password-ok").focus();
+}
+
+// A title bar's ? opens a Win95 "What's This?" tip; clicking it again, or
+// anywhere else, closes it
+function setUpTitleTip(helpId, tipId) {
+    var help = document.getElementById(helpId);
+    var tip = document.getElementById(tipId);
+    function setTip(open) {
+        tip.hidden = !open;
+        help.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+    help.addEventListener("click", function() {
+        setTip(tip.hidden);
+    });
+    help.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setTip(tip.hidden);
+        }
+    });
+    // Any click but on this ?, including the other window's ?, closes it -
+    // so only one tip is ever up
+    document.addEventListener("click", function(e) {
+        if (e.target !== help) setTip(false);
+    });
+}
+
 // ===== Hangman ==============================================================
-// griffinland: the window beside the password dialog. The word is the
-// password, so winning fills it into the dialog and the visitor just hits OK.
-// Writing it here in the clear gives nothing away - the game hands it to
-// anyone who plays well enough.
+// The word is the password: guess it before the figure is drawn.
 (function setUpHangman() {
     if (!document.documentElement.classList.contains("gated")) return;
 
-    var WORD = "CREATE";
+    var WORD = GATE_WORD;
     var MAX_MISSES = 6;   // one per .hm-part: head, body, two arms, two legs
 
     var drawing = document.getElementById("hangman-drawing");
@@ -157,10 +193,7 @@ function hashPassword(str) {
 
         if (WORD.split("").every(function(c) { return guessed[c]; })) {
             over = "won";
-            var input = document.getElementById("site-password");
-            input.value = WORD.toLowerCase();
-            document.getElementById("password-error").textContent = "";
-            document.getElementById("password-ok").focus();
+            fillPassword();
         } else if (misses >= MAX_MISSES) {
             over = "lost";
         }
@@ -190,28 +223,113 @@ function hashPassword(str) {
         if (/^[a-z]$/i.test(e.key)) guess(e.key.toUpperCase());
     });
 
-    // The title bar's ? opens a "What's This?" tip; clicking it again, or
-    // anywhere else, closes it
-    var help = document.getElementById("hangman-help");
-    var tip = document.getElementById("hangman-tip");
-    function setTip(open) {
-        tip.hidden = !open;
-        help.setAttribute("aria-expanded", open ? "true" : "false");
-    }
-    help.addEventListener("click", function(e) {
-        e.stopPropagation();
-        setTip(tip.hidden);
-    });
-    help.addEventListener("keydown", function(e) {
-        if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setTip(tip.hidden);
-        }
-    });
-    document.addEventListener("click", function() { setTip(false); });
-
+    setUpTitleTip("hangman-help", "hangman-tip");
     document.getElementById("hangman-reset").addEventListener("click", newGame);
     newGame();
+})();
+
+// ===== Dice =================================================================
+// Every double six gives away the next letter of the password - 1 in 36 a
+// roll, so the whole word takes a couple of hundred rolls on average. Progress
+// is kept for the tab session, so a reload doesn't throw away hard-won letters.
+(function setUpDice() {
+    if (!document.documentElement.classList.contains("gated")) return;
+
+    // Which of a die's 3x3 grid of spots carry a pip, numbered left to right,
+    // top to bottom
+    var PIPS = {
+        1: [4],
+        2: [2, 6],
+        3: [2, 4, 6],
+        4: [0, 2, 6, 8],
+        5: [0, 2, 4, 6, 8],
+        6: [0, 2, 3, 5, 6, 8]
+    };
+    var STORE = "griffinland-dice";
+
+    var dice = [document.getElementById("die-a"), document.getElementById("die-b")];
+    var wordEl = document.getElementById("dice-word");
+    var statusEl = document.getElementById("dice-status");
+    var countEl = document.getElementById("dice-count");
+    var rollBtn = document.getElementById("dice-roll");
+
+    var state = { revealed: 0, rolls: 0 };
+    try {
+        var saved = JSON.parse(sessionStorage.getItem(STORE));
+        if (saved) state = saved;
+    } catch (e) {}
+
+    function save() {
+        try { sessionStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {}
+    }
+
+    dice.forEach(function(die) {
+        for (var i = 0; i < 9; i++) die.appendChild(document.createElement("span"));
+    });
+
+    function show(die, face) {
+        [].forEach.call(die.children, function(spot, i) {
+            spot.classList.toggle("pip", PIPS[face].indexOf(i) !== -1);
+        });
+        die.setAttribute("data-face", face);
+    }
+
+    function randomFace() {
+        return 1 + Math.floor(Math.random() * 6);
+    }
+
+    function render() {
+        wordEl.textContent = GATE_WORD.split("").map(function(ch, i) {
+            return i < state.revealed ? ch : "_";
+        }).join(" ");
+        countEl.textContent = "Rolls: " + state.rolls;
+        rollBtn.disabled = state.revealed >= GATE_WORD.length;
+    }
+
+    function roll() {
+        if (rollBtn.disabled) return;
+        rollBtn.disabled = true;
+        statusEl.textContent = "Rolling...";
+
+        // A few quick random faces before they land, like dice tumbling
+        var frames = 0;
+        var tumble = setInterval(function() {
+            dice.forEach(function(die) { show(die, randomFace()); });
+            if (++frames < 8) return;
+            clearInterval(tumble);
+            land(randomFace(), randomFace());
+        }, 60);
+    }
+
+    function land(a, b) {
+        show(dice[0], a);
+        show(dice[1], b);
+        state.rolls++;
+
+        if (a === 6 && b === 6) {
+            state.revealed++;
+            if (state.revealed >= GATE_WORD.length) {
+                statusEl.textContent = "Double sixes! That's the whole password - it's in the box, hit OK.";
+                fillPassword();
+            } else {
+                statusEl.textContent = "Double sixes! Letter " + state.revealed + " is " +
+                    GATE_WORD.charAt(state.revealed - 1) + ".";
+            }
+        } else {
+            statusEl.textContent = "Rolled " + a + " and " + b + ". Keep going.";
+        }
+        save();
+        render();
+    }
+
+    show(dice[0], 6);
+    show(dice[1], 6);
+    statusEl.textContent = state.revealed >= GATE_WORD.length
+        ? "You rolled the whole password - it's \"" + GATE_WORD.toLowerCase() + "\"."
+        : "Roll double sixes to win a letter.";
+    rollBtn.addEventListener("click", roll);
+    setUpTitleTip("dice-help", "dice-tip");
+    render();
 })();
 
 // The icon each window carries at the left of its own title bar, and on its
@@ -615,3 +733,103 @@ function typeWriter(text, elementId, speed, callback) {
 const title = "griffinland"
 
 typeWriter(title, 'title', 40);
+
+// ===== Welcome ==============================================================
+// griffinland: the pop-up that greets visitors on the desktop, as if they'd
+// just come through the pearly gates. It opens the moment the password gate
+// lifts, or on load when there's no gate (already unlocked, or localhost),
+// zooming out of the typed title and back into it on "Enter paradise".
+windowIcons["welcome-window"] = "world_spinning.gif";
+
+(function setUpWelcome() {
+    var CAPTIONS = [
+        "you made it.",
+        "the gates of heaven are now open.",
+        "please wipe your feet.",
+        "population: you.",
+        "free parking. no bad vibes.",
+        "halos available at the front desk.",
+        "everything here is free. nothing here is real."
+    ];
+
+    var win = document.getElementById("welcome-window");
+    var caption = document.getElementById("welcome-caption");
+    var label = document.getElementById("welcome-progress-label");
+    var fill = document.getElementById("welcome-progress-fill");
+    var origin = document.getElementById("title");
+    var captionTimer = null;
+
+    win.insertBefore(buildWindowChrome(win, "YOU HAVE ASCENDED"), win.firstChild);
+    $(win).draggable();
+
+    // Each letter of the WordArt gets its own span, so they can ride a wave
+    var art = document.getElementById("welcome-wordart");
+    var n = 0;
+    art.textContent = "";
+    ["WELCOME TO", "GRIFFINLAND"].forEach(function(text) {
+        var line = document.createElement("span");
+        line.className = "welcome-wordart-line";
+        text.split("").forEach(function(ch) {
+            var letter = document.createElement("span");
+            letter.className = "letter";
+            letter.textContent = ch === " " ? " " : ch;
+            letter.style.setProperty("--i", n++);
+            line.appendChild(letter);
+        });
+        art.appendChild(line);
+    });
+
+    fill.addEventListener("animationend", function() {
+        label.textContent = "Soul uploaded.";
+    });
+
+    function nextCaption(i) {
+        if ($(win).is(":hidden")) {
+            clearInterval(captionTimer);
+            return;
+        }
+        caption.classList.add("fading");
+        setTimeout(function() {
+            caption.textContent = CAPTIONS[i % CAPTIONS.length];
+            caption.classList.remove("fading");
+        }, 250);
+    }
+
+    function open() {
+        // Centered on the desktop. Worked out from the CSS width, since the
+        // window has no size of its own until it's shown.
+        if (!isMobileLayout()) {
+            var width = Math.min(560, window.innerWidth - 32);
+            win.style.left = Math.max(16, (window.innerWidth - width) / 2) + "px";
+        }
+
+        // Re-adding the class restarts every animation from the top
+        win.classList.remove("welcome-play");
+        void win.offsetWidth;
+        win.classList.add("welcome-play");
+
+        label.textContent = "Uploading soul...";
+        caption.textContent = CAPTIONS[0];
+        var i = 0;
+        clearInterval(captionTimer);
+        captionTimer = setInterval(function() { nextCaption(++i); }, 2600);
+
+        showPopup("welcome-window", origin);
+    }
+
+    document.getElementById("welcome-enter").addEventListener("click", function() {
+        clearInterval(captionTimer);
+        hidePopup("welcome-window", origin);
+    });
+
+    var root = document.documentElement;
+    if (!root.classList.contains("gated")) {
+        setTimeout(open, 500);
+        return;
+    }
+    new MutationObserver(function(records, observer) {
+        if (root.classList.contains("gated")) return;
+        observer.disconnect();
+        setTimeout(open, 250);
+    }).observe(root, { attributes: true, attributeFilter: ["class"] });
+})();

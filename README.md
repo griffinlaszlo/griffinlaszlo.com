@@ -11,7 +11,7 @@ tray clock and fonts are mocial's, and only the desktop changes.
 | File | Where it comes from |
 |---|---|
 | `main.css` | mocial's stylesheet, copied as-is. Rules for mocial's own windows come along unused. |
-| `main.js` | mocial's shell, lifted word for word: icon dragging, the password gate, window fly-in/out, the taskbar, the world-clock tray, `buildWindowChrome`, the typed title. Comments starting `griffinland:` mark what's its own (the hangman, and the gate's two windows being left off the taskbar) - keep those when copying the shell over again. |
+| `main.js` | mocial's shell, lifted word for word: icon dragging, the password gate, window fly-in/out, the taskbar, the world-clock tray, `buildWindowChrome`, the typed title. Comments starting `griffinland:` mark what's its own (the gate's games, and their windows being left off the taskbar) - keep those when copying the shell over again. |
 | `griffinland.css` | Styles for griffinland's own desktop. Anything new goes here, not in `main.css`. |
 
 Because these are copies, a fix to the shell on mocial has to be copied here
@@ -33,18 +33,36 @@ python3 -m http.server 8900
 Then open `http://localhost:8900`. The password gate is skipped on localhost;
 add `?lock` to see it.
 
-## Password gate and hangman
+## Password gate and its games
 
 Same doorman as mocial, with griffinland's own password: `SITE_PASSWORD_HASH`
-in `index.html` is the hash of it. Beside the dialog, a hangman window lets
-visitors guess it - the word is the password, and winning fills it into the
-dialog so they only have to hit OK. Changing the password means changing both
-the hash and `WORD` in main.js's hangman section (`hashPassword("...")` in the
-console gives the new hash).
+in `index.html` is the hash of it. Two games flank the dialog, and both win
+the password:
 
-Since the game gives the password to anyone who plays, the gate is a toy, not
-a lock, and the two sites no longer carry an unlock across to each other:
-mocial asks for its own password.
+- **Hangman** (right) - the word is the password. Guess it before the figure
+  is drawn.
+- **Dice** (left) - every double six gives away the next letter. That's 1 in
+  36 a roll, so the whole word takes a couple of hundred rolls on average.
+  Letters won are kept for the tab session, so a reload doesn't lose them.
+
+Finishing either game fills the password into the dialog, so the visitor only
+has to hit OK. Changing the password means changing both the hash and
+`GATE_WORD` in main.js (`hashPassword("...")` in the console gives the new
+hash).
+
+Since the games give the password to anyone who plays, the gate is a toy, not
+a lock, and the two sites don't carry an unlock across to each other: mocial
+asks for its own password.
+
+## Welcome pop-up
+
+Once a visitor is through the gate (or straight away, when there's no gate),
+a "YOU HAVE ASCENDED" window opens: griffinland as the far side of the pearly
+gates. The gates swing open, the spinning world rises out of them as an angel,
+the WordArt waves, captions cycle, and a fake progress bar uploads your soul.
+It's all CSS and SVG in `griffinland.css` and `index.html`; main.js only adds
+the title bar, splits the WordArt into letters and opens it. "Enter paradise"
+closes it. The captions are the `CAPTIONS` list in main.js's welcome section.
 
 ## Deploying
 

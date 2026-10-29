@@ -40,10 +40,10 @@
 
 /* ===== Gate with hangman ==================================================
    The password dialog stays dead center, exactly where it sits on mocial;
-   the hangman game that lets visitors win the password hangs off its right
-   side, centered on it. The wrapper is the dialog's width, so the hangman
-   is placed against the dialog rather than the screen edge. Where there's
-   no room beside it, the hangman drops below and the gate scrolls. */
+   the two games that win the password hang off its sides, centered on it -
+   hangman on the right, dice on the left. The wrapper is the dialog's width,
+   so the games are placed against the dialog rather than the screen edges.
+   Where there's no room beside it, they drop below it and the gate scrolls. */
 #password-gate {
     overflow-y: auto;
 }
@@ -58,22 +58,29 @@
     max-width: 560px;   /* the dialog's own max-width */
 }
 
-#hangman-window {
+#hangman-window,
+#dice-window {
     position: absolute;
     top: 50%;
-    left: calc(100% + 24px);
     transform: translateY(-50%);
     width: 320px;
     text-align: left;
 }
+#hangman-window {
+    left: calc(100% + 24px);
+}
+#dice-window {
+    right: calc(100% + 24px);
+}
 
 /* Beside the dialog needs 560 + 2 x (24 + 320) across, and the hangman's
-   height down. Short of that, it stacks under the dialog. */
+   height down. Short of that, both stack under the dialog. */
 @media screen and (max-width: 1279px), screen and (max-height: 659px) {
     #gate-windows {
         padding-top: 90px;   /* with the gate's 20px, clears the ~105px typed title */
     }
-    #hangman-window {
+    #hangman-window,
+    #dice-window {
         position: static;
         transform: none;
         width: 100%;
@@ -87,9 +94,9 @@
     box-sizing: border-box;
 }
 
-/* The ? button's pop-up: a Win95 "What's This?" tip, pale yellow with a
+/* A ? button's pop-up: a Win95 "What's This?" tip, pale yellow with a
    hard black border, hanging just under the title bar's buttons */
-.hangman-tip {
+.title-tip {
     position: absolute;
     top: calc(100% + 4px);
     right: 4px;
@@ -104,10 +111,11 @@
     color: #000;
     white-space: nowrap;
 }
-.hangman-tip[hidden] {
+.title-tip[hidden] {
     display: none;
 }
-#hangman-help {
+#hangman-help,
+#dice-help {
     cursor: url('cursor-pointer.png') 8 0, pointer;
 }
 
@@ -148,7 +156,8 @@
     stroke-width: 2;
 }
 
-#hangman-word {
+#hangman-word,
+#dice-word {
     margin: 12px 0 10px;
     text-align: center;
     font-family: 'W95FA', monospace;
@@ -222,4 +231,463 @@
 .hangman-buttons {
     flex-direction: row;
     justify-content: flex-end;
+}
+
+/* ===== Dice ================================================================
+   Two white dice on a green felt well, the green of Win95's Solitaire */
+.dice-inner {
+    padding: 14px 16px 16px;
+    box-sizing: border-box;
+}
+
+.dice-felt {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 26px 0;
+    background: #008000;
+    border: 2px inset #d8d8d8;
+}
+
+/* A 3x3 grid of spots; main.js marks which ones carry a pip */
+.die {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    width: 64px;
+    height: 64px;
+    padding: 8px;
+    box-sizing: border-box;
+    background: #fff;
+    border: 2px solid #000;
+    border-radius: 9px;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.45);
+}
+.die span {
+    align-self: center;
+    justify-self: center;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+}
+.die span.pip {
+    background: #000;
+}
+/* Sixes are the ones that count, so they land red */
+.die[data-face="6"] span.pip {
+    background: #c00000;
+}
+
+#dice-status {
+    min-height: 34px;
+    font-size: 13px;
+}
+
+.dice-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+.dice-buttons {
+    flex-direction: row;
+}
+.password-buttons button:disabled {
+    color: #808080;
+    text-shadow: 1px 1px 0 #fff;
+    border-style: outset;
+    cursor: default;
+}
+
+/* ===== Welcome =============================================================
+   The pop-up that greets visitors on the desktop: griffinland as the far side
+   of the pearly gates. A sky scene on top - sun rays turning, clouds drifting,
+   the gates swinging open and the spinning world rising out as an angel -
+   under gold WordArt, then a grey Win95 body with a fake progress bar.
+   Everything plays once the window gets .welcome-play (see main.js). */
+#welcome-window {
+    display: none;
+    top: 70px;
+    width: min(560px, calc(100vw - 32px));
+    text-align: left;
+}
+
+.welcome-inner {
+    background: #d8d8d8;
+}
+
+.welcome-sky {
+    position: relative;
+    height: 320px;
+    overflow: hidden;
+    container-type: inline-size;
+    background: linear-gradient(180deg, #6fb7ff 0%, #a9d8ff 45%, #ffe7f3 80%, #fff6d6 100%);
+    border-bottom: 2px solid #808080;
+}
+
+/* Sun rays fanning out from behind the gates, slowly turning */
+.welcome-rays {
+    position: absolute;
+    left: 50%;
+    top: 74%;
+    width: 900px;
+    height: 900px;
+    margin: -450px 0 0 -450px;
+    background: repeating-conic-gradient(rgba(255, 250, 210, 0.75) 0deg 8deg, rgba(255, 250, 210, 0) 8deg 20deg);
+    -webkit-mask: radial-gradient(circle, #000 8%, transparent 52%);
+    mask: radial-gradient(circle, #000 8%, transparent 52%);
+    animation: welcome-spin 40s linear infinite;
+}
+
+/* The floor of cloud: a row of white puffs, scrolling sideways. Two layers,
+   one behind the gates and one in front of their feet. */
+.welcome-cloudbank {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -18px;
+    height: 70px;
+    background: radial-gradient(circle at 34px 40px, #fff 30px, transparent 31px) repeat-x;
+    background-size: 68px 70px;
+    animation: welcome-bank 14s linear infinite;
+}
+.welcome-cloudbank-back {
+    bottom: 14px;
+    opacity: 0.75;
+    background-size: 90px 70px;
+    animation-duration: 22s;
+    animation-direction: reverse;
+}
+
+/* Loose clouds drifting across the sky, each its own speed and size */
+.welcome-cloud {
+    position: absolute;
+    left: -160px;
+    top: var(--top);
+    width: 110px;
+    height: 34px;
+    background: #fff;
+    border-radius: 34px;
+    opacity: 0.92;
+    animation: welcome-drift var(--dur) linear var(--delay) infinite;
+}
+.welcome-cloud::before,
+.welcome-cloud::after {
+    content: "";
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+}
+.welcome-cloud::before {
+    left: 18px;
+    top: -20px;
+    width: 44px;
+    height: 44px;
+}
+.welcome-cloud::after {
+    left: 50px;
+    top: -30px;
+    width: 52px;
+    height: 52px;
+}
+
+.welcome-sparkle {
+    position: absolute;
+    color: #fff8c0;
+    font-size: 18px;
+    text-shadow: 0 0 6px #fff;
+    animation: welcome-twinkle 1.8s ease-in-out var(--delay) infinite;
+}
+
+/* The light pouring out between the gates as they open */
+.welcome-glow {
+    position: absolute;
+    left: 50%;
+    bottom: 30px;
+    width: 220px;
+    height: 170px;
+    margin-left: -110px;
+    background: radial-gradient(ellipse at 50% 70%, #fff 0%, rgba(255, 246, 190, 0.9) 35%, rgba(255, 246, 190, 0) 70%);
+    transform: scale(0.3);
+    opacity: 0;
+}
+
+.welcome-gates {
+    position: absolute;
+    left: 50%;
+    bottom: 34px;
+    width: 200px;
+    height: 150px;
+    margin-left: -100px;
+    display: flex;
+    perspective: 500px;
+}
+.welcome-gate {
+    width: 100px;
+    height: 150px;
+    overflow: visible;
+}
+.welcome-gate path {
+    fill: none;
+    stroke: #c9a227;
+    stroke-width: 5;
+    stroke-linecap: round;
+}
+.welcome-gate circle {
+    fill: #fffdf4;
+    stroke: #c9a227;
+    stroke-width: 1.5;
+}
+.welcome-gate-left {
+    transform-origin: left center;
+}
+.welcome-gate-right {
+    transform-origin: right center;
+}
+
+/* The angel rises up out of the gates and then hovers there, flapping */
+.welcome-angel {
+    position: absolute;
+    left: 50%;
+    bottom: 40px;
+    width: 140px;
+    height: 100px;
+    margin-left: -70px;
+    opacity: 0;
+}
+/* Out-specifies `.popup-window .popup-inner-wrapper img`, which stretches
+   window images to full width */
+#welcome-window .popup-inner-wrapper .welcome-angel img {
+    position: absolute;
+    left: 50%;
+    top: 30px;
+    width: 58px;
+    margin-left: -29px;
+    image-rendering: pixelated;
+}
+.welcome-halo {
+    position: absolute;
+    left: 50%;
+    top: 12px;
+    width: 46px;
+    height: 12px;
+    margin-left: -23px;
+    border: 4px solid #ffd700;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #fff3a0, inset 0 0 6px #fff3a0;
+    animation: welcome-halo 1.6s ease-in-out infinite alternate;
+}
+.welcome-wing {
+    position: absolute;
+    top: 30px;
+    width: 52px;
+    height: 38px;
+    overflow: visible;
+}
+.welcome-wing path {
+    fill: #fff;
+    stroke: #9aa7b8;
+    stroke-width: 2;
+    stroke-linejoin: round;
+}
+.welcome-wing-left {
+    left: 18px;
+    transform-origin: right 60%;
+    animation: welcome-flap-left 0.32s ease-in-out infinite alternate;
+}
+.welcome-wing-right {
+    right: 18px;
+    transform-origin: left 60%;
+    animation: welcome-flap-right 0.32s ease-in-out infinite alternate;
+}
+
+/* Gold WordArt, each letter riding its own wave. Sized off the window's
+   width so "GRIFFINLAND" always fits on one line. */
+.welcome-wordart {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 12px;
+    text-align: center;
+    font-family: "Times New Roman", Times, serif;
+    font-weight: 900;
+    line-height: 1;
+    filter: drop-shadow(3px 3px 0 #7a3d00) drop-shadow(0 0 8px rgba(255, 255, 255, 0.85));
+}
+.welcome-wordart-line {
+    display: block;
+    white-space: nowrap;
+}
+.welcome-wordart-line:first-child {
+    font-size: clamp(22px, 6cqw, 32px);
+    margin-bottom: 2px;
+}
+.welcome-wordart-line + .welcome-wordart-line {
+    font-size: clamp(30px, 9.4cqw, 54px);
+}
+.welcome-wordart .letter {
+    display: inline-block;
+    color: transparent;
+    background: linear-gradient(180deg, #fffbe0 0%, #ffd700 42%, #d98a00 58%, #ffe680 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-stroke: 1px #8a4b00;
+    animation: welcome-wave 1.4s ease-in-out calc(var(--i) * 0.07s) infinite;
+}
+
+.welcome-body {
+    padding: 12px 16px 14px;
+    font-family: Tahoma, Geneva, sans-serif;
+}
+
+.welcome-caption {
+    min-height: 22px;
+    margin-bottom: 10px;
+    font-size: 17px;
+    font-weight: bold;
+    text-align: center;
+    transition: opacity 0.25s ease;
+}
+.welcome-caption.fading {
+    opacity: 0;
+}
+
+.welcome-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+}
+#welcome-progress-label {
+    flex: 0 0 auto;
+    min-width: 116px;
+}
+
+/* A Win95 progress bar: navy blocks filling a sunken well, in jumps */
+.welcome-progress {
+    flex: 1 1 auto;
+    height: 18px;
+    padding: 2px;
+    background: #fff;
+    border: 2px inset #d8d8d8;
+    box-sizing: border-box;
+}
+.welcome-progress-fill {
+    width: 0;
+    height: 100%;
+    background: repeating-linear-gradient(90deg, #000080 0 10px, transparent 10px 12px);
+}
+
+.welcome-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+}
+.welcome-fineprint {
+    font-size: 10px;
+    color: #555;
+}
+.welcome-buttons {
+    flex-direction: row;
+}
+
+/* ----- What plays when the window opens ----- */
+.welcome-play .welcome-gate-left {
+    animation: welcome-gate-left 1.6s ease-in-out 0.5s both;
+}
+.welcome-play .welcome-gate-right {
+    animation: welcome-gate-right 1.6s ease-in-out 0.5s both;
+}
+.welcome-play .welcome-glow {
+    animation: welcome-glow-open 1.6s ease-out 0.6s forwards,
+               welcome-glow-pulse 2.2s ease-in-out 2.2s infinite alternate;
+}
+.welcome-play .welcome-angel {
+    animation: welcome-ascend 1.6s cubic-bezier(0.22, 1, 0.36, 1) 1.3s both,
+               welcome-hover 2.4s ease-in-out 2.9s infinite alternate;
+}
+.welcome-play .welcome-wordart {
+    animation: welcome-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.welcome-play .welcome-progress-fill {
+    animation: welcome-progress 3.4s steps(18) 0.4s forwards;
+}
+
+@keyframes welcome-spin {
+    to { transform: rotate(360deg); }
+}
+@keyframes welcome-bank {
+    to { background-position-x: -680px; }
+}
+@keyframes welcome-drift {
+    to { transform: translateX(900px); }
+}
+@keyframes welcome-twinkle {
+    0%, 100% { transform: scale(0.4) rotate(0deg); opacity: 0.2; }
+    50% { transform: scale(1.2) rotate(45deg); opacity: 1; }
+}
+@keyframes welcome-gate-left {
+    to { transform: rotateY(-62deg); }
+}
+@keyframes welcome-gate-right {
+    to { transform: rotateY(62deg); }
+}
+@keyframes welcome-glow-open {
+    to { transform: scale(1); opacity: 1; }
+}
+@keyframes welcome-glow-pulse {
+    from { transform: scale(1); opacity: 1; }
+    to { transform: scale(1.12); opacity: 0.8; }
+}
+@keyframes welcome-ascend {
+    from { transform: translateY(40px) scale(0.3); opacity: 0; }
+    to { transform: translateY(-84px) scale(1); opacity: 1; }
+}
+@keyframes welcome-hover {
+    from { transform: translateY(-84px); opacity: 1; }
+    to { transform: translateY(-94px); opacity: 1; }
+}
+@keyframes welcome-halo {
+    from { transform: translateY(0); }
+    to { transform: translateY(-4px); }
+}
+@keyframes welcome-flap-left {
+    from { transform: rotate(14deg); }
+    to { transform: rotate(-26deg); }
+}
+@keyframes welcome-flap-right {
+    from { transform: rotate(-14deg); }
+    to { transform: rotate(26deg); }
+}
+@keyframes welcome-wave {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+@keyframes welcome-pop {
+    from { transform: scale(0) rotate(-8deg); }
+    to { transform: scale(1) rotate(0deg); }
+}
+@keyframes welcome-progress {
+    to { width: 100%; }
+}
+
+/* No motion wanted: skip straight to the gates open and the angel up */
+@media (prefers-reduced-motion: reduce) {
+    .welcome-sky *,
+    .welcome-sky *::before,
+    .welcome-sky *::after {
+        animation: none !important;
+    }
+    .welcome-gate-left { transform: rotateY(-62deg); }
+    .welcome-gate-right { transform: rotateY(62deg); }
+    .welcome-glow { transform: none; opacity: 1; }
+    .welcome-angel { transform: translateY(-84px); opacity: 1; }
+    .welcome-play .welcome-progress-fill {
+        animation: none;
+        width: 100%;
+    }
 }
