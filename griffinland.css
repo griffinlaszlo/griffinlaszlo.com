@@ -1350,7 +1350,16 @@ html.gated body.dark-mode > header,
     height: 170px;
     z-index: 1;
     pointer-events: none;
-    overflow: hidden;
+}
+/* The scenery sits back a touch; griffin and his speech bubbles don't, which
+   is why the fade is here rather than on #gl-horizon itself. No overflow
+   clipping either - his bubbles rise above the strip, and as a fixed element
+   it can't add scrollbars. */
+.gl-treeline,
+.gl-trees,
+.gl-chair:not(.gl-chair-griffin),
+.gl-dino,
+.gl-birds {
     opacity: 0.85;
 }
 html.gated #gl-horizon {
@@ -1433,14 +1442,23 @@ html.gated #gl-horizon {
 }
 /* griffin's own chairlift art; its clamp sits just right of center */
 .gl-chair-griffin .gl-chair-swing {
-    margin-left: -31px;
+    margin-left: -35px;
     margin-top: -2px;
 }
 .gl-chair-griffin img {
     display: block;
-    width: 58px;
+    width: 66px;
     height: auto;
 }
+/* Lift stopped: every chair swings hard on the spot */
+.gl-chair-swing.gl-swing-hard {
+    animation: gl-swing-hard 0.8s ease-in-out infinite alternate;
+}
+@keyframes gl-swing-hard {
+    from { transform: rotate(-9deg); }
+    to { transform: rotate(9deg); }
+}
+
 @keyframes gl-ride {
     from { left: -80px; top: 32px; }
     to { left: calc(100% + 80px); top: 12px; }
@@ -1734,5 +1752,184 @@ html.gated #gl-horizon {
     }
     .gl-dino {
         left: 30%;
+    }
+}
+
+/* ===== griffin, on the lift ================================================= */
+/* He's the one thing on the horizon you can touch */
+.gl-rider {
+    pointer-events: auto;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+    transform-origin: 50% 10%;
+    transition: transform 0.2s ease;
+}
+.gl-rider.gl-noticed {
+    transform: scale(1.08) rotate(3deg);
+}
+/* Tips his head back for a swig */
+.gl-rider.gl-sip {
+    animation: gl-sip 1.3s ease-in-out;
+}
+@keyframes gl-sip {
+    30%, 65% { transform: rotate(-10deg) translateY(-3px); }
+}
+
+/* His speech bubble, above the cable with its tail pointing down at him */
+.gl-bubble {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 4px;
+    width: max-content;
+    max-width: 190px;
+    padding: 4px 9px;
+    background: #fff;
+    border: 2px solid #000;
+    border-radius: 12px;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1.3;
+    color: #000;
+    white-space: normal;
+}
+.gl-bubble[hidden] {
+    display: none;
+}
+.gl-bubble::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 12px;
+    border: 7px solid transparent;
+    border-top-color: #000;
+    border-left-width: 0;
+}
+.gl-bubble.gl-bubble-left {
+    left: auto;
+    right: 4px;
+}
+.gl-bubble.gl-bubble-left::after {
+    left: auto;
+    right: 12px;
+    border-left-width: 7px;
+    border-right-width: 0;
+}
+.gl-bubble.pop {
+    animation: gl-bubble-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: 12px 100%;
+}
+@keyframes gl-bubble-pop {
+    from { transform: scale(0.5); opacity: 0; }
+}
+
+/* Humming: notes float up off his head */
+.gl-note {
+    position: fixed;
+    z-index: 250000;
+    pointer-events: none;
+    font-size: 16px;
+    color: #fff;
+    text-shadow: 1px 1px 0 #000;
+    animation: gl-note-rise 2s ease-out forwards;
+}
+@keyframes gl-note-rise {
+    from { opacity: 1; transform: translate(-50%, 0) rotate(-10deg); }
+    to { opacity: 0; transform: translate(calc(-50% + var(--nx)), -70px) rotate(15deg); }
+}
+
+/* Shaka: a ring of sparkles bursts off his hand */
+.gl-burst {
+    position: fixed;
+    z-index: 250000;
+    pointer-events: none;
+    font-size: 14px;
+    text-shadow: 0 0 5px currentColor;
+    animation: gl-burst 0.8s ease-out forwards;
+}
+@keyframes gl-burst {
+    from { opacity: 1; transform: translate(-50%, -50%) scale(0.3); }
+    to { opacity: 0; transform: translate(calc(-50% + var(--bx)), calc(-50% + var(--by))) scale(1.1); }
+}
+
+/* The snowball in flight */
+.gl-snowball {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 250000;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(circle at 35% 35%, #fff 0%, #f2f8ff 55%, #b9cde0 100%);
+    box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
+}
+
+/* ...and where it hits the glass: a lumpy blob, flecks flung out, SPLAT!,
+   then it slides down and melts away */
+.gl-splat {
+    position: fixed;
+    z-index: 250000;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+.gl-splat-blob {
+    position: absolute;
+    left: -60px;
+    top: -55px;
+    width: 120px;
+    height: 110px;
+    background: radial-gradient(circle at 40% 38%, #fff 0%, #f6faff 50%, #d5e4f2 100%);
+    border-radius: 48% 52% 41% 59% / 55% 44% 56% 45%;
+    box-shadow: inset -6px -8px 12px rgba(120, 150, 180, 0.35), 2px 3px 6px rgba(0, 0, 0, 0.25);
+    animation: gl-splat-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.gl-fleck {
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 50%;
+    background: #f6faff;
+    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.25);
+    transform: translate(calc(-50% + var(--fx)), calc(-50% + var(--fy)));
+    animation: gl-fleck-out 0.3s ease-out;
+}
+.gl-splat-word {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%) rotate(-10deg);
+    font-family: 'W95FA', sans-serif;
+    font-size: 22px;
+    color: #1b3cd8;
+    text-shadow: 1px 1px 0 #fff;
+    white-space: nowrap;
+}
+.gl-splat.melt {
+    animation: gl-melt 1.5s ease-in forwards;
+}
+@keyframes gl-splat-in {
+    from { transform: scale(0.2); }
+}
+@keyframes gl-fleck-out {
+    from { transform: translate(-50%, -50%) scale(0.2); }
+}
+@keyframes gl-melt {
+    to { transform: translateY(40px) scaleY(1.15); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gl-rider,
+    .gl-rider.gl-sip,
+    .gl-bubble.pop,
+    .gl-note,
+    .gl-burst,
+    .gl-splat-blob,
+    .gl-fleck,
+    .gl-splat.melt {
+        animation: none;
+        transition: none;
     }
 }

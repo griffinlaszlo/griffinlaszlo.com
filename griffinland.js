@@ -815,6 +815,7 @@ var EMPTY_CHAIR_SVG =
         '<path d="M20 1 V16 M9 16 H31 M9 16 V36 M31 16 V36 M5 36 H35 M5 36 V41 H35 V36 M11 41 V49 H29 V41"/>' +
     '</svg>';
 var LIFT_CHAIRS = 6;
+var riderChair = null;   // griffin's chair - see "griffin, on the lift"
 
 function buildLift() {
     var lift = document.querySelector("#gl-horizon .gl-lift");
@@ -825,11 +826,13 @@ function buildLift() {
         if (i === 0) {
             // griffin, riding up with a drink
             chair.classList.add("gl-chair-griffin");
-            var img = el("img");
+            var img = el("img", "gl-rider");
             img.src = "gifs/chairlift.png";
-            img.alt = "";
+            img.alt = "griffin";
+            img.title = "griffin";
             img.draggable = false;
             swing.appendChild(img);
+            riderChair = chair;
         } else {
             swing.innerHTML = EMPTY_CHAIR_SVG;
         }
@@ -853,6 +856,254 @@ window.addEventListener("resize", function() {
     clearTimeout(treeTimer);
     treeTimer = setTimeout(drawTrees, 200);
 });
+
+// ===== griffin, on the lift ==================================================
+// The rider on the chairlift is a character. Left alone he chats, hums and
+// sips his beer. Hover and he says hi. Click and he does something - talks,
+// throws a snowball at your screen, takes a sip, yodels, throws a shaka, or
+// stops the whole lift so everyone's left dangling. He calls first chair on
+// the way in and says goodbye on the way out.
+
+(function setUpRider() {
+    if (!riderChair) return;
+    var chair = riderChair;
+    var rider = chair.querySelector(".gl-rider");
+
+    var LINES = [
+        "first chair, baby!",
+        "pow day!!!",
+        "this lift is sooo slow",
+        "want a sip? ...too bad",
+        "is it après yet? it's always après.",
+        "don't look down. i looked down.",
+        "welcome to griffinland!",
+        "nice cursor. very sparkly.",
+        "i've been on this lift since 2025",
+        "have you signed my guestbook?",
+        "that dino is SO slow",
+        "send it.",
+        "my goggles are fogging up",
+        "who keeps opening not-a-virus.exe",
+        "the calculator says i'm 100% vibes",
+        "if this lift stops i'm NOT jumping",
+        "you look great today btw",
+        "ski bum? i prefer ski professional"
+    ];
+    var HELLOS = ["yo!", "oh hey!", "sup", "hiii", "oh! didn't see you there"];
+
+    // ----- Speech bubble: rides along with the chair -----
+    var bubble = el("div", "gl-bubble");
+    bubble.hidden = true;
+    chair.appendChild(bubble);
+    var bubbleTimer = null;
+    var spoken = 0;   // counts every line, so a delayed follow-up can tell if he's moved on
+
+    function say(text, ms) {
+        spoken++;
+        bubble.textContent = text;
+        bubble.hidden = false;
+        // Near the right edge the bubble opens to the left, to stay on screen
+        bubble.classList.toggle("gl-bubble-left", chair.getBoundingClientRect().left > window.innerWidth - 220);
+        bubble.classList.remove("pop");
+        void bubble.offsetWidth;
+        bubble.classList.add("pop");
+        clearTimeout(bubbleTimer);
+        bubbleTimer = setTimeout(function() { bubble.hidden = true; }, ms || 2800);
+    }
+
+    // Lines without repeats until they've all been said
+    var lineDeck = [];
+    function nextLine() {
+        if (!lineDeck.length) lineDeck = LINES.slice().sort(function() { return Math.random() - 0.5; });
+        return lineDeck.pop();
+    }
+
+    // A point on his drawing, as fractions of the picture: 0.74, 0.3 is his
+    // raised hand, 0.45, 0.22 his head
+    function spot(fx, fy) {
+        var r = rider.getBoundingClientRect();
+        return { x: r.left + r.width * fx, y: r.top + r.height * fy };
+    }
+
+    function isOnScreen() {
+        var r = chair.getBoundingClientRect();
+        return r.right > 40 && r.left < window.innerWidth - 40;
+    }
+
+    // ----- What he does -----
+
+    function talk() {
+        say(nextLine());
+    }
+
+    function sip() {
+        say(pick(["*sip*", "*gulp*", "*slurp*"]), 1400);
+        rider.classList.remove("gl-sip");
+        void rider.offsetWidth;
+        rider.classList.add("gl-sip");
+        var said = spoken;
+        setTimeout(function() {
+            if (spoken === said) say(pick(["ahh.", "refreshing.", "that's the stuff"]), 1600);
+        }, 1500);
+    }
+
+    function hum() {
+        say(pick(["yodel-ay-ee-hoo ♪", "♪ la la laaa ♪", "♪ do do doo ♪"]), 2400);
+        var head = spot(0.45, 0.2);
+        for (var i = 0; i < 4; i++) {
+            (function(i) {
+                setTimeout(function() {
+                    var note = el("span", "gl-note", pick(["♪", "♫", "♬"]));
+                    note.style.left = (head.x + rand(-8, 8)) + "px";
+                    note.style.top = head.y + "px";
+                    note.style.setProperty("--nx", rand(-30, 30).toFixed(0) + "px");
+                    document.body.appendChild(note);
+                    note.addEventListener("animationend", function() { note.remove(); });
+                }, i * 260);
+            })(i);
+        }
+    }
+
+    function shaka() {
+        say(pick(["shaka, brah", "hang loose", "stay rad"]), 1800);
+        var hand = spot(0.74, 0.3);
+        for (var i = 0; i < 10; i++) {
+            var angle = (i / 10) * Math.PI * 2;
+            var dist = rand(20, 36);
+            var spark = el("span", "gl-burst", pick(["✦", "✧", "✶"]));
+            spark.style.left = hand.x + "px";
+            spark.style.top = hand.y + "px";
+            spark.style.color = pick(SPARKLE_COLORS);
+            spark.style.setProperty("--bx", (Math.cos(angle) * dist).toFixed(0) + "px");
+            spark.style.setProperty("--by", (Math.sin(angle) * dist).toFixed(0) + "px");
+            document.body.appendChild(spark);
+            spark.addEventListener("animationend", function() { this.remove(); });
+        }
+    }
+
+    // A snowball from his raised hand, arcing up and getting bigger as it
+    // comes at you, until it splats on the glass
+    function throwSnowball() {
+        say(pick(["snowball fight!", "incoming!", "heads up!"]), 1600);
+        var from = spot(0.74, 0.3);
+        var to = { x: rand(window.innerWidth * 0.2, window.innerWidth * 0.8), y: rand(90, window.innerHeight * 0.45) };
+        if (REDUCED_MOTION) {
+            splat(to);
+            return;
+        }
+        var ball = el("div", "gl-snowball");
+        document.body.appendChild(ball);
+        var start = performance.now();
+        var DURATION = 850;
+        function fly(now) {
+            var t = Math.min(1, (now - start) / DURATION);
+            var x = from.x + (to.x - from.x) * t;
+            var y = from.y + (to.y - from.y) * t - Math.sin(Math.PI * t) * 160;
+            var scale = 0.6 + t * 1.6;
+            ball.style.transform = "translate(" + x + "px," + y + "px) translate(-50%, -50%) scale(" + scale + ")";
+            if (t < 1) {
+                requestAnimationFrame(fly);
+            } else {
+                ball.remove();
+                splat(to);
+            }
+        }
+        requestAnimationFrame(fly);
+    }
+
+    function splat(at) {
+        var mark = el("div", "gl-splat");
+        mark.style.left = at.x + "px";
+        mark.style.top = at.y + "px";
+        mark.appendChild(el("span", "gl-splat-blob"));
+        for (var i = 0; i < 9; i++) {
+            var angle = rand(0, Math.PI * 2);
+            var dist = rand(55, 90);
+            var fleck = el("span", "gl-fleck");
+            fleck.style.setProperty("--fx", (Math.cos(angle) * dist).toFixed(0) + "px");
+            fleck.style.setProperty("--fy", (Math.sin(angle) * dist).toFixed(0) + "px");
+            fleck.style.width = fleck.style.height = rand(6, 14).toFixed(0) + "px";
+            mark.appendChild(fleck);
+        }
+        mark.appendChild(el("span", "gl-splat-word", "SPLAT!"));
+        document.body.appendChild(mark);
+        setTimeout(function() { mark.classList.add("melt"); }, 1900);
+        setTimeout(function() { mark.remove(); }, 3400);
+    }
+
+    // Every chair stops dead and swings; then the lift lurches back into life
+    var liftStopped = false;
+    function stopLift() {
+        if (liftStopped) return talk();
+        liftStopped = true;
+        say("uh oh... lift's stopped", 3200);
+        var chairs = document.querySelectorAll(".gl-chair");
+        var swings = document.querySelectorAll(".gl-chair-swing");
+        [].forEach.call(chairs, function(c) { c.style.animationPlayState = "paused"; });
+        [].forEach.call(swings, function(s) { s.classList.add("gl-swing-hard"); });
+        setTimeout(function() {
+            [].forEach.call(chairs, function(c) { c.style.animationPlayState = ""; });
+            say("and we're moving!", 2000);
+            setTimeout(function() {
+                [].forEach.call(swings, function(s) { s.classList.remove("gl-swing-hard"); });
+                liftStopped = false;
+            }, 1600);
+        }, 4500);
+    }
+
+    // ----- Clicks: a different thing each time, never the same twice running -----
+    var ACTIONS = [talk, talk, throwSnowball, throwSnowball, sip, hum, shaka, stopLift];
+    var lastAction = null;
+    rider.addEventListener("click", function() {
+        var action;
+        do { action = pick(ACTIONS); } while (action === lastAction);
+        lastAction = action;
+        action();
+    });
+
+    // ----- Hover: he notices you -----
+    var lastHello = 0;
+    rider.addEventListener("mouseenter", function() {
+        rider.classList.add("gl-noticed");
+        if (Date.now() - lastHello > 8000 && bubble.hidden) {
+            lastHello = Date.now();
+            say(pick(HELLOS), 1500);
+        }
+    });
+    rider.addEventListener("mouseleave", function() {
+        rider.classList.remove("gl-noticed");
+    });
+
+    // ----- Left alone: every so often he chats, hums or sips -----
+    function idle() {
+        if (!document.hidden && !isGated() && !saver && isOnScreen() && bubble.hidden) {
+            var roll = Math.random();
+            if (roll < 0.6) talk();
+            else if (roll < 0.8) hum();
+            else sip();
+        }
+        setTimeout(idle, rand(12000, 24000));
+    }
+    setTimeout(idle, rand(6000, 12000));
+
+    // ----- The ride: first chair on the way in, goodbye on the way out -----
+    if (!REDUCED_MOTION) {
+        var lap = { arrived: false, leaving: false };
+        setInterval(function() {
+            if (document.hidden || isGated()) return;
+            var x = chair.getBoundingClientRect().left;
+            if (x < 0) {
+                lap.arrived = lap.leaving = false;
+            } else if (x > 30 && !lap.arrived) {
+                lap.arrived = true;
+                if (bubble.hidden) say(pick(["first chair, baby!", "here we go!", "weeee"]), 2200);
+            } else if (x > window.innerWidth - 170 && !lap.leaving) {
+                lap.leaving = true;
+                if (bubble.hidden) say(pick(["see ya!", "catch you next lap", "bye bye!"]), 2200);
+            }
+        }, 700);
+    }
+})();
 
 // ===== Calculator ============================================================
 // Works like the Windows one (each operator applies to the running total), with

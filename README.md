@@ -96,6 +96,11 @@ headings in `griffinland.css`. The desktop is forest green (`--gl-forest`).
   chairlift running over it (griffin rides one chair - `gifs/chairlift.png`,
   from mocial's chairlift art), the dino walking along the ground and birds
   going over.
+- **griffin, on the lift** - the rider is a character. Left alone he chats,
+  hums and sips; hover and he says hi; click and he talks, throws a snowball
+  that splats on your screen, sips, yodels, throws a shaka, or stops the
+  whole lift. He calls first chair on the way in and says bye on the way out.
+  His lines are the `LINES` list.
 - **Calculator** - works like the Windows one, plus a lucky key.
 - **Guestbook** - sign it, pick a mood gif, see everyone's notes. For now the
   entries live in each visitor's own browser (localStorage), because the site
