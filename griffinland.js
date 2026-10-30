@@ -977,23 +977,44 @@ function buildRider() {
 
 // The other riders: a couple and a random snowboarder, drawn to match
 // griffin's art (tools/crew/*.svg) and cut into layers by
-// tools/crew-build.py, which stack like his do. They ride every other chair
-// behind him, so he's never lost in a crowd, and each has a little going on:
+// tools/crew-build.py, which stack like his do. Each has a little going on:
 // her cocoa steams and he waves now and then; the snowboarder's board swings
 // off his front foot and his phone's REC light blinks.
+//
+// Each comes in a few looks (different people: clothes, hair, skin), dealt
+// out fresh on every visit with no look on the lift twice. They ride every
+// other chair behind griffin going up, so he's never lost in a crowd, and a
+// couple of the chairs coming back down carry someone too.
 // Bump CREW_VERSION whenever tools/crew-build.py rewrites the art.
-var CREW_VERSION = 1;
-var CREW = {
-    2: { name: "couple", title: "a couple", layers: ["base", "steam", "wave"] },
-    4: { name: "boarder", title: "a random snowboarder", layers: ["back", "board", "front", "rec"] }
+var CREW_VERSION = 2;
+var CREW_RIDERS = {
+    couple: { title: "a couple", layers: ["base", "steam", "wave"], looks: ["a", "b", "c"] },
+    boarder: { title: "a random snowboarder", layers: ["back", "board", "front", "rec"], looks: ["a", "b", "c"] }
 };
+// Which chair carries whom, on the way up and on the way down
+var CREW_UP = { 2: "couple", 4: "boarder" };
+var CREW_DOWN = { 1: "boarder", 4: "couple" };
 
-function buildCrew(who) {
-    var rider = el("div", "gl-crew gl-crew-" + who.name);
+// Shuffle each rider's looks once; buildCrew deals from the top
+Object.keys(CREW_RIDERS).forEach(function(name) {
+    var looks = CREW_RIDERS[name].looks;
+    for (var k = looks.length - 1; k > 0; k--) {
+        var r = Math.floor(Math.random() * (k + 1));
+        var keep = looks[k];
+        looks[k] = looks[r];
+        looks[r] = keep;
+    }
+});
+
+function buildCrew(name) {
+    var who = CREW_RIDERS[name];
+    var look = who.looks.shift();
+    who.looks.push(look);
+    var rider = el("div", "gl-crew gl-crew-" + name);
     rider.title = who.title;
     who.layers.forEach(function(layer) {
         var img = el("img", "glc-" + layer);
-        img.src = "gifs/crew/" + who.name + "-" + layer + ".png?v=" + CREW_VERSION;
+        img.src = "gifs/crew/" + name + "-" + look + "-" + layer + ".png?v=" + CREW_VERSION;
         img.alt = "";
         img.draggable = false;
         rider.appendChild(img);
@@ -1010,8 +1031,8 @@ function buildLift() {
         if (i === 0) {
             chair.classList.add("gl-chair-griffin");
             swing.appendChild(buildRider());
-        } else if (CREW[i]) {
-            swing.appendChild(buildCrew(CREW[i]));
+        } else if (CREW_UP[i]) {
+            swing.appendChild(buildCrew(CREW_UP[i]));
         } else {
             var empty = el("img", "gl-chair-empty");
             empty.src = art("empty-chair.png");
@@ -1032,18 +1053,23 @@ function buildLift() {
     }
 
     // The chairs coming back down: the same empty chair, mirrored to face
-    // downhill, on the far rope. Spaced half a gap off the near chairs, so
-    // the two lines pass each other instead of moving in step.
+    // downhill, on the far rope (a few with a rider). Spaced half a gap off
+    // the near chairs, so the two lines pass each other instead of moving
+    // in step.
     var back = document.querySelector("#gl-horizon .gl-lift-back");
     if (!back) return;
     for (var j = 0; j < LIFT_CHAIRS; j++) {
         var downChair = el("div", "gl-chair gl-chair-back");
         var downSwing = el("div", "gl-chair-swing");
-        var downImg = el("img", "gl-chair-empty");
-        downImg.src = art("empty-chair.png");
-        downImg.alt = "";
-        downImg.draggable = false;
-        downSwing.appendChild(downImg);
+        if (CREW_DOWN[j]) {
+            downSwing.appendChild(buildCrew(CREW_DOWN[j]));
+        } else {
+            var downImg = el("img", "gl-chair-empty");
+            downImg.src = art("empty-chair.png");
+            downImg.alt = "";
+            downImg.draggable = false;
+            downSwing.appendChild(downImg);
+        }
         downChair.style.animationDelay = (-LIFT_SECONDS * (j + 0.5) / LIFT_CHAIRS) + "s";
         downSwing.style.animationDelay = (-j * 0.9) + "s";
         if (REDUCED_MOTION) {

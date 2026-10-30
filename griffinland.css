@@ -1477,7 +1477,8 @@ html.gated #gl-horizon {
     margin-left: -30px;
     margin-top: -3px;
 }
-.gl-chair-back .gl-chair-empty {
+.gl-chair-back .gl-chair-empty,
+.gl-chair-back .gl-crew {
     width: 60px;
     height: 64px;
     transform: scaleX(-1);

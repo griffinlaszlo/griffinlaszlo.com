@@ -110,12 +110,17 @@ headings in `griffinland.css`. The desktop is forest green (`--gl-forest`).
   each pose in and back out. Hover and he raises the beer in a cheers.
 - **The other riders** - every other chair behind griffin carries someone:
   a couple (her cocoa steams, and every so often he waves) and a random
-  snowboarder filming on his phone, board swinging off his front foot. They're
-  drawn as SVG in `tools/crew/` to match griffin's art: his three-quarter
-  lounging pose, thin wobbly ink, marker-streaked fills. Each marks its moving
-  parts with an `L-` class, and `python3 tools/crew-build.py` (Pillow and
-  Chrome) renders each part as its own layer into `gifs/crew/`. Then bump
-  `CREW_VERSION` in griffinland.js. `CREW` there says which chair each rides.
+  snowboarder filming on his phone, board swinging off his front foot. Two of
+  the chairs coming back down carry riders too, mirrored to face downhill.
+  They're drawn as SVG in `tools/crew/` to match griffin's art: his
+  three-quarter lounging pose, thin wobbly ink, marker-streaked fills. Each
+  rider comes in three looks - different people, by swapping the drawing's
+  colours (`VARIANTS` in `tools/crew-build.py`) - and griffinland.js deals
+  them out fresh on every visit, never the same look twice at once. Each
+  drawing marks its moving parts with an `L-` class, and
+  `python3 tools/crew-build.py` (Pillow and Chrome) renders every look's
+  parts as layers into `gifs/crew/`. Then bump `CREW_VERSION` in
+  griffinland.js. `CREW_UP` and `CREW_DOWN` there say which chairs carry whom.
 - **Calculator** - works like the Windows one, plus a lucky key.
 - **Guestbook** - sign it, pick a mood gif, see everyone's notes. Entries live
   in a Supabase table: `supabase/guestbook.sql` creates it (run it once in the
