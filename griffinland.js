@@ -827,24 +827,50 @@ function drawTrees() {
 
     holder.innerHTML = '<svg viewBox="0 0 ' + W + ' 170" width="' + W + '" height="170"><path d="' + d + '"/></svg>';
 
-    // The lift's towers, drawn in their own layer so they can be coloured...
+    // The lift, in three layers: the far rope and its wheel trains, then the
+    // towers in front of it, then the near rope riding over their wheels
     var towers = document.querySelector("#gl-horizon .gl-towers");
     if (towers) {
-        var art = "";
-        // The far rope and its wheels first, so the towers stand in front...
-        for (var b = 170; b < W; b += 380) art += backTrainSVG(b, cableY(b, W), backCableY(b, W));
-        art += '<path d="M0 ' + backCableY(0, W) + ' L' + W + ' ' + backCableY(W, W) + '" stroke="#e8eef2" stroke-width="1.6" fill="none"/>';
-        for (var t = 170; t < W; t += 380) art += towerSVG(t, cableY(t, W), base);
-        // ...and the cable, climbing gently left to right over their wheels
-        art += '<path d="M0 ' + cableY(0, W) + ' L' + W + ' ' + cableY(W, W) + '" stroke="#fff" stroke-width="2" fill="none"/>';
+        var backArt = "", art = "";
+        for (var t = 170; t < W; t += 380) {
+            backArt += backTrainSVG(t, cableY(t, W), backCableY(t, W));
+            art += towerSVG(t, cableY(t, W), base);
+        }
+        // The ropes move with their chairs: each chair crosses the screen
+        // and its run-off at either end in LIFT_SECONDS, and so does the rope
+        var upSpeed = (W + 160) / LIFT_SECONDS;
+        var downSpeed = (W + 120) / LIFT_SECONDS;
+        backArt += ropeSVG(backCableY(0, W), backCableY(W, W), W, "down", downSpeed);
+        var layer = function(cls, inner) {
+            return '<svg class="' + cls + '" viewBox="0 0 ' + W + ' 170" width="' + W + '" height="170">' + inner + '</svg>';
+        };
         towers.innerHTML =
-            '<svg viewBox="0 0 ' + W + ' 170" width="' + W + '" height="170">' +
-                // A touch of wobble on every line, so they look hand-drawn
+            layer("gl-back-line", backArt) +
+            // A touch of wobble on every line of the towers, so they look
+            // hand-drawn. Not on the ropes: they're steel, and straight, and
+            // a moving line under a displacement filter shimmers.
+            layer("gl-tower-art",
                 '<filter id="gl-doodle"><feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="7"/>' +
                 '<feDisplacementMap in="SourceGraphic" scale="1.8"/></filter>' +
-                '<g filter="url(#gl-doodle)">' + art + '</g>' +
-            '</svg>';
+                '<g filter="url(#gl-doodle)">' + art + '</g>') +
+            layer("gl-front-line", ropeSVG(cableY(0, W), cableY(W, W), W, "up", upSpeed));
     }
+}
+
+// A haul rope from the left edge (y1) to the right (y2), in the chairs' greys:
+// a dark outline round a grey core, with light glints along it - the twist
+// of the steel catching the light. The glints slide along at the chairs'
+// speed (px a second), right for the "up" side and left for "down", so the
+// rope visibly travels with what's hanging off it.
+var ROPE_LAY = 7;                // the glints' repeat, in px
+function ropeSVG(y1, y2, W, dir, speed) {
+    var d = 'M0 ' + y1 + ' L' + W + ' ' + y2;
+    return '<g class="gl-rope gl-rope-' + dir + '">' +
+        '<path d="' + d + '" stroke="#484848" stroke-width="3.4" stroke-linecap="round"/>' +
+        '<path d="' + d + '" stroke="#909090" stroke-width="1.7"/>' +
+        '<path class="gl-rope-lay" d="' + d + '" stroke="#c4c4c4" stroke-width="1.1" stroke-dasharray="2.5 ' + (ROPE_LAY - 2.5) + '"' +
+            ' style="animation-duration: ' + (ROPE_LAY / speed).toFixed(3) + 's"/>' +
+    '</g>';
 }
 
 // One lift tower, doodled to sit with the chair art: a blue pole in black ink
@@ -1463,23 +1489,26 @@ makeElementDraggable("guestbook-icon-group", function() {
 });
 
 // ===== Workstation cam =======================================================
-// The cameras on griffin's desk (the Arducam and the webcam), with a tab for
-// each. tools/workstation-cam.py runs them on griffin's laptop, and the window
-// works two ways:
+// The cameras on griffin's desk (the Arducam and the webcam). The desk cam
+// icon opens a window for each, side by side, and Split screen tiles them so
+// together they fill the whole desktop. tools/workstation-cam.py runs the
+// cameras on griffin's laptop, and the windows work two ways:
 //
-// - On a local copy it talks to that server directly: live video, a record
-//   button (clips go to ~/Desktop/workstation cam/) and the ON AIR switch that
-//   puts the cameras on the public view.
-// - On griffinlaszlo.com it reads the public view through the tunnel at
+// - On a local copy they talk to that server directly: live video, a record
+//   button per camera (clips go to ~/Desktop/workstation cam/) and the ON AIR
+//   switch that puts the cameras on the public view.
+// - On griffinlaszlo.com they read the public view through the tunnel at
 //   cam.mocial.org: a still frame a second and nothing else, and the icon
 //   only shows while griffin's on air. Add ?public to a local copy's address
 //   to see it the way visitors do.
 //
-// Either way the window checks in every second while it's open, and only
-// pulls pictures of the camera it's showing.
+// Either way the windows check in every second while one's open, and only
+// pull pictures for the windows that are showing.
 
 var CAM_LOCAL_URL = "http://127.0.0.1:8080";
 var CAM_PUBLIC_URL = "https://cam.mocial.org";
+// The server's cameras, until it says otherwise
+var CAM_LABELS = ["arducam", "webcam"];
 
 (function() {
     var isPublic = !window.IS_LOCAL || /[?&]public\b/.test(location.search);
@@ -1501,194 +1530,217 @@ var CAM_PUBLIC_URL = "https://cam.mocial.org";
     if (isPublic) icon.style.display = "none";
     document.getElementById("screensaver-icon-group").parentNode.appendChild(icon);
 
-    var cam = makeWindow({ id: "cam-window", title: "workstation cam", icon: "icons/webcam.svg",
-                           className: "gl-cam" + (isPublic ? " gl-cam-public" : "") });
-
-    // One tab per camera, made from whatever cameras the server has, each with
-    // a little light that's green while that camera has a picture
-    var tabs = el("div", "gl-cam-tabs");
-    cam.body.appendChild(tabs);
-
-    // The viewfinder: the feed, camcorder-style overlays, and a VCR-blue
-    // NO SIGNAL (or OFF AIR) screen for when there's no picture
-    var screen = el("div", "gl-cam-screen");
-    var feed = el("img", "gl-cam-feed");
-    feed.alt = "Live view of griffin's desk";
-    feed.draggable = false;
-    var rec = el("div", "gl-cam-rec");
-    var mode = el("div", "gl-cam-mode");
-    var stamp = el("div", "gl-cam-stamp");
-    var noSignal = el("div", "gl-cam-nosignal");
-    var noSignalTitle = el("div", "gl-cam-nosignal-title");
-    var noSignalWhy = el("div", "gl-cam-nosignal-why");
-    noSignal.appendChild(noSignalTitle);
-    noSignal.appendChild(noSignalWhy);
-    [feed, rec, mode, stamp, noSignal].forEach(function(node) { screen.appendChild(node); });
-    cam.body.appendChild(screen);
-
-    // Visitors get the viewfinder and a caption; griffin gets the controls
-    var controls = el("div", "gl-cam-controls");
-    var shutter = el("button", "gl-cam-shutter");
-    shutter.type = "button";
-    var shutterLabel = el("span", "gl-cam-shutter-label", "REC");
-    var said = el("div", "gl-cam-said");
-    var airBtn = el("button", "gl-cam-air", "ON AIR");
-    airBtn.type = "button";
-    airBtn.title = "Show the cameras on griffinlaszlo.com";
-    var folderBtn = el("button", "gl-btn", "Open folder");
-    folderBtn.type = "button";
-    (isPublic ? [said] : [shutter, shutterLabel, said, airBtn, folderBtn])
-        .forEach(function(node) { controls.appendChild(node); });
-    cam.body.appendChild(controls);
-
-    var clipList = el("ul", "gl-cam-clips");
-    if (!isPublic) cam.body.appendChild(clipList);
-
     var camStatus = null;
-    var busy = false;
-    var saidUntil = 0;
-    var pick = load("gl-cam-pick", null);   // the camera picked last, remembered
-    var shown = null;                       // the camera on screen now
-    var feedCam = null;                     // the camera the feed is pulling
+    var camWindows = {};          // label -> that camera's window
+    var camOrder = [];            // the labels, in the server's order
+    var split = false;
+    var built = false;            // once main.js is watching, new windows need watchWindow
 
     function camFetch(path, method) {
         return fetch(CAM_URL + path, { method: method || "GET", cache: "no-store" })
             .then(function(r) { return r.json(); });
     }
 
-    // Locally the feed is live video. Publicly it's a fresh still each time
-    // this is called (once a second), loaded off-screen first so the picture
-    // never blinks; every visitor asks for the same second's frame, which
-    // Cloudflare hands out from its cache.
-    function startFeed(label) {
-        if (isPublic) {
-            var next = new Image();
-            next.onload = function() {
-                if (feedCam === label) feed.src = next.src;
-            };
-            next.src = CAM_URL + "/" + encodeURIComponent(label) + ".jpg?t=" + Math.floor(Date.now() / 1000);
-            feedCam = label;
-            return;
-        }
-        if (feedCam === label && feed.getAttribute("src")) return;
-        feed.src = CAM_URL + "/stream?cam=" + encodeURIComponent(label) + "&t=" + Date.now();
-        feedCam = label;
-    }
-    function stopFeed() {
-        feed.removeAttribute("src");
-        feedCam = null;
-    }
-    // A dropped feed is picked back up by the next check-in if the camera's live
-    feed.addEventListener("error", stopFeed);
-
     function clock(seconds) {
         var s = Math.floor(seconds);
         return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
     }
 
-    // The line beside the button: the camera's name, or a message for a few seconds
-    function say(text, forMs) {
-        said.textContent = text;
-        saidUntil = forMs ? Date.now() + forMs : 0;
+    function stampText() {
+        var now = new Date();
+        return now.toLocaleString("en-US", { month: "short" }).toUpperCase() + " " +
+            now.getDate() + " " + now.getFullYear() + "  " +
+            String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
     }
 
-    function renderTabs(cams, recording) {
-        var labels = cams.map(function(c) { return c.label; }).join("|");
-        if (tabs.getAttribute("data-labels") !== labels) {
-            tabs.innerHTML = "";
-            cams.forEach(function(c) {
-                var tab = el("button", "gl-cam-tab");
-                tab.type = "button";
-                tab.setAttribute("data-cam", c.label);
-                tab.appendChild(el("span", "gl-cam-tab-light"));
-                tab.appendChild(document.createTextNode(c.label));
-                tab.addEventListener("click", function() {
-                    pick = c.label;
-                    save("gl-cam-pick", pick);
-                    render(camStatus);
-                });
-                tabs.appendChild(tab);
-            });
-            tabs.setAttribute("data-labels", labels);
-        }
-        cams.forEach(function(c, i) {
-            var tab = tabs.children[i];
-            var on = !!shown && c.label === shown.label;
-            tab.classList.toggle("gl-cam-tab-on", on);
-            tab.classList.toggle("gl-cam-tab-live", c.live);
-            tab.setAttribute("aria-pressed", on);
-            // Stay on the camera that's recording until it stops
-            tab.disabled = recording && !on;
+    function allWindows() {
+        return camOrder.map(function(label) { return camWindows[label]; });
+    }
+
+    // ----- One window per camera -----
+
+    function makeCamWindow(label) {
+        var w = makeWindow({ id: "cam-window-" + label, title: "desk cam - " + label, icon: "icons/webcam.svg",
+                             className: "gl-cam" + (isPublic ? " gl-cam-public" : "") });
+        var v = { label: label, win: w.win, busy: false, saidUntil: 0, feedOn: false };
+
+        // The viewfinder: the feed, camcorder-style overlays, and a VCR-blue
+        // NO SIGNAL (or OFF AIR) screen for when there's no picture
+        v.screen = el("div", "gl-cam-screen");
+        v.feed = el("img", "gl-cam-feed");
+        v.feed.alt = "Live view of griffin's desk from the " + label;
+        v.feed.draggable = false;
+        v.rec = el("div", "gl-cam-rec");
+        v.mode = el("div", "gl-cam-mode");
+        v.stamp = el("div", "gl-cam-stamp");
+        var noSignal = el("div", "gl-cam-nosignal");
+        v.noSignalTitle = el("div", "gl-cam-nosignal-title");
+        v.noSignalWhy = el("div", "gl-cam-nosignal-why");
+        noSignal.appendChild(v.noSignalTitle);
+        noSignal.appendChild(v.noSignalWhy);
+        [v.feed, v.rec, v.mode, v.stamp, noSignal].forEach(function(node) { v.screen.appendChild(node); });
+        w.body.appendChild(v.screen);
+        // A dropped feed is picked back up by the next check-in if the camera's live
+        v.feed.addEventListener("error", function() { stopFeed(v); });
+
+        // Visitors get the viewfinder, a caption and Split screen; griffin
+        // gets the controls too
+        var controls = el("div", "gl-cam-controls");
+        v.shutter = el("button", "gl-cam-shutter");
+        v.shutter.type = "button";
+        v.shutterLabel = el("span", "gl-cam-shutter-label", "REC");
+        v.said = el("div", "gl-cam-said");
+        v.airBtn = el("button", "gl-cam-air", "ON AIR");
+        v.airBtn.type = "button";
+        v.airBtn.title = "Show the cameras on griffinlaszlo.com";
+        v.folderBtn = el("button", "gl-btn gl-cam-folder", "Open folder");
+        v.folderBtn.type = "button";
+        v.splitBtn = el("button", "gl-btn gl-cam-split-btn", "Split screen");
+        v.splitBtn.type = "button";
+        (isPublic ? [v.said, v.splitBtn] : [v.shutter, v.shutterLabel, v.said, v.airBtn, v.folderBtn, v.splitBtn])
+            .forEach(function(node) { controls.appendChild(node); });
+        w.body.appendChild(controls);
+
+        v.clipList = el("ul", "gl-cam-clips");
+        if (!isPublic) w.body.appendChild(v.clipList);
+
+        v.shutter.addEventListener("click", function() { toggleRecording(v); });
+        v.airBtn.addEventListener("click", function() { toggleAir(v); });
+        v.folderBtn.addEventListener("click", openClipsFolder);
+        v.splitBtn.addEventListener("click", function() { setSplit(!split); });
+
+        var splitItem = { label: "Split screen", action: function() { setSplit(!split); } };
+        Object.defineProperty(splitItem, "checked", { get: function() { return split; } });
+        v.win.insertBefore(buildMenuBar(v.win, standardMenus(v.win, {
+            file: isPublic ? [] : [
+                { label: "Record / stop", action: function() { toggleRecording(v); } },
+                { label: "On air / off air", action: function() { toggleAir(v); } },
+                { label: "Open clips folder", action: openClipsFolder }, "-"],
+            view: [splitItem, "-"]
+        })), w.body);
+
+        if (built) watchWindow(v.win);
+        camWindows[label] = v;
+        return v;
+    }
+
+    // Windows for whichever cameras the server has
+    function useCameras(labels) {
+        labels.forEach(function(label) {
+            if (!camWindows[label]) makeCamWindow(label);
         });
+        camOrder = labels;
+    }
+    useCameras(CAM_LABELS);
+    $(function() { built = true; });
+
+    // Locally the feed is live video. Publicly it's a fresh still each time
+    // this is called (once a second), loaded off-screen first so the picture
+    // never blinks; every visitor asks for the same second's frame, which
+    // Cloudflare hands out from its cache.
+    function startFeed(v) {
+        if (isPublic) {
+            var next = new Image();
+            next.onload = function() {
+                if (v.feedOn) v.feed.src = next.src;
+            };
+            next.src = CAM_URL + "/" + encodeURIComponent(v.label) + ".jpg?t=" + Math.floor(Date.now() / 1000);
+            v.feedOn = true;
+            return;
+        }
+        if (v.feedOn && v.feed.getAttribute("src")) return;
+        v.feed.src = CAM_URL + "/stream?cam=" + encodeURIComponent(v.label) + "&t=" + Date.now();
+        v.feedOn = true;
+    }
+    function stopFeed(v) {
+        v.feed.removeAttribute("src");
+        v.feedOn = false;
+    }
+
+    // The line beside the buttons: the camera's name, or a message for a few seconds
+    function say(v, text, forMs) {
+        v.said.textContent = text;
+        v.saidUntil = forMs ? Date.now() + forMs : 0;
     }
 
     function render(s) {
         camStatus = s;
-        var cams = s ? s.cameras : [];
-        if (s && s.recording) pick = s.recording_cam;
-        shown = cams.filter(function(c) { return c.label === pick; })[0] || cams[0] || null;
-        renderTabs(cams, !!(s && s.recording));
-
-        var offAir = isPublic && !(s && s.on_air);
-        var live = !offAir && !!(shown && shown.live);
-        cam.win.classList.toggle("gl-cam-live", live);
-        cam.win.classList.toggle("gl-cam-recording", !!(s && s.recording));
+        if (s) useCameras(s.cameras.map(function(c) { return c.label; }));
+        allWindows().forEach(function(v) {
+            var c = s ? s.cameras.filter(function(cam) { return cam.label === v.label; })[0] : null;
+            renderCam(v, c, s);
+        });
         if (isPublic) icon.style.display = s && s.on_air ? "" : "none";
+    }
+
+    function renderCam(v, c, s) {
+        if ($(v.win).is(":hidden")) {
+            stopFeed(v);
+            return;
+        }
+        var offAir = isPublic && !(s && s.on_air);
+        var live = !offAir && !!(c && c.live);
+        var recording = !!(c && c.recording);
+        v.win.classList.toggle("gl-cam-live", live);
+        v.win.classList.toggle("gl-cam-recording", recording);
 
         if (live) {
-            startFeed(shown.label);
+            startFeed(v);
         } else {
-            stopFeed();
-            noSignalTitle.textContent = offAir ? "OFF AIR" : "NO SIGNAL";
-            noSignalWhy.textContent = offAir ? "griffin's not broadcasting right now - check back later"
+            stopFeed(v);
+            v.noSignalTitle.textContent = offAir ? "OFF AIR" : "NO SIGNAL";
+            v.noSignalWhy.textContent = offAir ? "griffin's not broadcasting right now - check back later"
                 : !s ? "the camera server isn't running - start it with\npython3 tools/workstation-cam.py"
-                : shown ? (shown.problem || "waiting for a picture") : "the server has no cameras";
+                : c ? (c.problem || "waiting for a picture") : "the server has no " + v.label;
         }
 
-        mode.textContent = live && shown.size ? shown.size.split("x")[1] + "p" + shown.fps : "";
-        rec.textContent = isPublic ? (live ? "LIVE" : "")
-            : s && s.recording ? "REC " + clock(s.seconds) : "";
-        var now = new Date();
-        stamp.textContent = now.toLocaleString("en-US", { month: "short" }).toUpperCase() + " " +
-            now.getDate() + " " + now.getFullYear() + "  " +
-            String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+        v.mode.textContent = live && c.size ? c.size.split("x")[1] + "p" + c.fps : "";
+        v.rec.textContent = isPublic ? (live ? "LIVE" : "") : recording ? "REC " + clock(c.seconds) : "";
+        v.stamp.textContent = stampText();
+        v.splitBtn.textContent = split ? "Exit split" : "Split screen";
 
         if (isPublic) {
-            say(live ? "live from griffin's desk - a new frame every second" : "");
+            say(v, live ? "live from griffin's desk" : "");
             return;
         }
 
-        shutter.disabled = busy || !s || (!live && !s.recording);
-        shutter.setAttribute("aria-label", s && s.recording ? "Stop recording" : "Start recording");
-        shutterLabel.textContent = s && s.recording ? "STOP" : "REC";
-        airBtn.disabled = busy || !s;
-        airBtn.classList.toggle("gl-cam-air-on", !!(s && s.on_air));
-        airBtn.setAttribute("aria-pressed", !!(s && s.on_air));
-        folderBtn.disabled = !s;
-        if (Date.now() > saidUntil) say(shown && shown.name ? shown.name : "");
+        v.shutter.disabled = v.busy || !s || (!live && !recording);
+        v.shutter.setAttribute("aria-label", recording ? "Stop recording" : "Start recording");
+        v.shutterLabel.textContent = recording ? "STOP" : "REC";
+        v.airBtn.disabled = v.busy || !s;
+        v.airBtn.classList.toggle("gl-cam-air-on", !!(s && s.on_air));
+        v.airBtn.setAttribute("aria-pressed", !!(s && s.on_air));
+        v.folderBtn.disabled = !s;
+        if (Date.now() > v.saidUntil) say(v, c && c.name ? c.name : "");
 
-        clipList.innerHTML = "";
-        (s ? s.clips : []).slice(0, 3).forEach(function(clip) {
+        v.clipList.innerHTML = "";
+        (c ? c.clips : []).forEach(function(clip) {
             var li = el("li", null, clip.name.replace(/\.mp4$/, ""));
             li.appendChild(el("span", "gl-cam-clip-size", clip.mb + " MB"));
-            clipList.appendChild(li);
+            v.clipList.appendChild(li);
         });
     }
 
+    function anyOpen() {
+        return allWindows().some(function(v) { return !$(v.win).is(":hidden"); });
+    }
+
     function checkIn() {
-        if ($(cam.win).is(":hidden")) {
-            stopFeed();
+        // Closing either window ends split screen
+        if (split && allWindows().some(function(v) { return $(v.win).is(":hidden"); })) setSplit(false);
+        if (!anyOpen()) {
+            allWindows().forEach(stopFeed);
             return;
         }
         camFetch("/status").then(render).catch(function() { render(null); });
     }
     setInterval(checkIn, 1000);
 
-    // With the window shut, visitors' pages still look in every half minute,
-    // so the icon turns up when griffin goes on air
+    // With the windows shut, visitors' pages still look in every half
+    // minute, so the icon turns up when griffin goes on air
     if (isPublic) {
         var lookForBroadcast = function() {
-            if (!$(cam.win).is(":hidden")) return;
+            if (anyOpen()) return;
             camFetch("/status").then(function(s) {
                 icon.style.display = s.on_air ? "" : "none";
             }).catch(function() {
@@ -1699,42 +1751,47 @@ var CAM_PUBLIC_URL = "https://cam.mocial.org";
         setInterval(lookForBroadcast, 30000);
     }
 
+    // ----- Controls (local copies only) -----
+
     // A POST to the local server, then show where things landed
-    function act(path, onDone) {
-        if (busy || !camStatus) return;
-        busy = true;
-        shutter.disabled = airBtn.disabled = true;
+    function act(v, path, onDone) {
+        if (v.busy || !camStatus) return;
+        v.busy = true;
+        v.shutter.disabled = v.airBtn.disabled = true;
         camFetch(path, "POST").then(function(s) {
-            busy = false;
+            v.busy = false;
             if (s.error) {
-                say(s.error, 4000);
+                say(v, s.error, 4000);
                 checkIn();
                 return;
             }
             if (onDone) onDone(s);
             render(s);
         }).catch(function() {
-            busy = false;
+            v.busy = false;
             render(null);
         });
     }
 
-    function toggleRecording() {
+    function toggleRecording(v) {
         if (!camStatus) return;
-        if (camStatus.recording) {
-            say("saving...");
-            act("/record/stop", function(s) {
-                say(s.saved ? "saved to " + s.folder.split("/").pop() : "that clip didn't save", 4000);
+        var c = camStatus.cameras.filter(function(cam) { return cam.label === v.label; })[0];
+        if (!c) return;
+        var cam = "?cam=" + encodeURIComponent(v.label);
+        if (c.recording) {
+            say(v, "saving...");
+            act(v, "/record/stop" + cam, function(s) {
+                say(v, s.saved ? "saved to " + s.folder.split("/").pop() : "that clip didn't save", 4000);
             });
         } else {
-            act("/record/start?cam=" + encodeURIComponent(shown ? shown.label : ""));
+            act(v, "/record/start" + cam);
         }
     }
 
-    function toggleAir() {
+    function toggleAir(v) {
         if (!camStatus) return;
-        act(camStatus.on_air ? "/air/off" : "/air/on", function(s) {
-            say(s.on_air ? "on air at " + s.public_url.replace(/^https?:\/\//, "") : "off air", 4000);
+        act(v, camStatus.on_air ? "/air/off" : "/air/on", function(s) {
+            say(v, s.on_air ? "on air at " + s.public_url.replace(/^https?:\/\//, "") : "off air", 4000);
         });
     }
 
@@ -1742,19 +1799,118 @@ var CAM_PUBLIC_URL = "https://cam.mocial.org";
         camFetch("/clips/open", "POST").catch(function() {});
     }
 
-    shutter.addEventListener("click", toggleRecording);
-    airBtn.addEventListener("click", toggleAir);
-    folderBtn.addEventListener("click", openClipsFolder);
+    // ----- Opening, side by side -----
 
-    cam.win.insertBefore(buildMenuBar(cam.win, standardMenus(cam.win, isPublic ? {} : {
-        file: [{ label: "Record / stop", action: toggleRecording },
-               { label: "On air / off air", action: toggleAir },
-               { label: "Open clips folder", action: openClipsFolder }, "-"]
-    })), cam.body);
-
-    makeElementDraggable("cam-icon-group", function() {
-        openWindow(cam.win, icon);
+    function openCams() {
+        var wins = allWindows();
+        if (!isMobileLayout()) {
+            // The first time, the windows sit side by side across the middle
+            var width = parseFloat(getComputedStyle(wins[0].win).width) || 480;
+            var gap = 16;
+            var left = (window.innerWidth - wins.length * width - (wins.length - 1) * gap) / 2;
+            wins.forEach(function(v, i) {
+                if (v.win.getAttribute("data-placed")) return;
+                v.win.style.left = Math.max(12, left + i * (width + gap)) + "px";
+                v.win.style.top = "96px";
+                v.win.setAttribute("data-placed", "1");
+            });
+        }
+        wins.forEach(function(v) { openWindow(v.win, icon); });
+        if (split) layoutSplit();
         checkIn();
+    }
+
+    makeElementDraggable("cam-icon-group", openCams);
+
+    // ?cams opens them as the desktop comes up - the Mac's desk cam launcher
+    // uses it - after the parked ad has slid in, so they land on top
+    if (/[?&]cams\b/.test(location.search)) {
+        onDesktopReady(function() { setTimeout(openCams, 2000); });
+    }
+
+    // ----- Split screen -----
+    // Tiles the camera windows over the whole desktop, above the taskbar:
+    // side by side or one above the other, whichever leaves the pictures
+    // bigger. Each viewfinder is sized to its 16:9 picture and centred on
+    // black, so nothing's cropped and the overlays sit on the picture.
+
+    function layoutSplit() {
+        var wins = allWindows();
+        var footer = document.querySelector("footer");
+        var W = window.innerWidth;
+        var H = footer ? Math.round(footer.getBoundingClientRect().top) : window.innerHeight;
+        var n = wins.length;
+
+        // How much of each window isn't picture: title bar, menus, controls
+        function chromeHeight(v) {
+            setScreen(v, "", "0px", "");
+            return v.win.offsetHeight;
+        }
+        function pictureArea(cellW, cellH) {
+            var w = Math.min(cellW, (cellH - chrome) * 16 / 9);
+            return w > 0 ? w * w * 9 / 16 : 0;
+        }
+        wins[0].win.style.width = Math.floor(W / n) + "px";
+        var chrome = chromeHeight(wins[0]);
+        var across = pictureArea(W / n, H) >= pictureArea(W, H / n);
+
+        wins.forEach(function(v, i) {
+            var x = across ? Math.round(i * W / n) : 0;
+            var y = across ? 0 : Math.round(i * H / n);
+            var w = across ? Math.round((i + 1) * W / n) - x : W;
+            var h = across ? H : Math.round((i + 1) * H / n) - y;
+            v.win.style.left = x + "px";
+            v.win.style.top = y + "px";
+            v.win.style.width = w + "px";
+            var roomH = Math.max(60, h - chromeHeight(v));
+            var roomW = v.screen.offsetWidth;
+            var fitW = Math.round(Math.min(roomW, roomH * 16 / 9));
+            var fitH = Math.round(fitW * 9 / 16);
+            var above = Math.floor((roomH - fitH) / 2);
+            setScreen(v, fitW + "px", fitH + "px", above + "px");
+            // Whatever borders and margins did to the sum, the window ends
+            // exactly at the taskbar
+            v.screen.style.marginBottom = Math.max(0, above + h - v.win.getBoundingClientRect().height) + "px";
+        });
+    }
+
+    function setScreen(v, width, height, margin) {
+        v.screen.style.width = width;
+        v.screen.style.height = height;
+        v.screen.style.marginTop = v.screen.style.marginBottom = margin;
+    }
+
+    function setSplit(on) {
+        if (on === split || (on && isMobileLayout())) return;
+        split = on;
+        allWindows().forEach(function(v) {
+            var s = v.win.style;
+            if (on) {
+                v.saved = { left: s.left, top: s.top, width: s.width };
+                v.win.classList.add("gl-cam-split");
+                $(v.win).draggable("disable");
+                if ($(v.win).is(":hidden")) openWindow(v.win, icon);
+                bringToFront(v.win);
+            } else {
+                v.win.classList.remove("gl-cam-split");
+                $(v.win).draggable("enable");
+                if (v.saved) {
+                    s.left = v.saved.left;
+                    s.top = v.saved.top;
+                    s.width = v.saved.width;
+                }
+                setScreen(v, "", "", "");
+            }
+        });
+        if (on) layoutSplit();
+        render(camStatus);
+    }
+
+    window.addEventListener("resize", function() {
+        if (split) layoutSplit();
+    });
+    document.addEventListener("keydown", function(e) {
+        if (split && e.key === "Escape") setSplit(false);
     });
 })();
 

@@ -1378,6 +1378,33 @@ html.gated #gl-horizon {
 .gl-towers svg {
     display: block;
     overflow: visible;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+/* The ropes: no fill, and the far one paler, like its chairs */
+.gl-rope path {
+    fill: none;
+}
+.gl-rope-down {
+    opacity: 0.82;
+}
+/* The glints along each rope slide one repeat (ROPE_LAY in griffinland.js)
+   per cycle; griffinland.js sets each cycle's length so they keep pace with
+   the chairs. The up rope runs left to right, the down rope back. */
+.gl-rope-up .gl-rope-lay {
+    animation: gl-rope-up 1s linear infinite;
+}
+.gl-rope-down .gl-rope-lay {
+    animation: gl-rope-down 1s linear infinite;
+}
+@keyframes gl-rope-up {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: -7px; }
+}
+@keyframes gl-rope-down {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: 7px; }
 }
 /* The dino, out for his walk along the line - one slow lap, bobbing */
 .gl-dino {
@@ -1549,57 +1576,35 @@ html.gated #gl-horizon {
 }
 
 /* ===== Workstation cam ====================================================== */
-#cam-window {
-    width: 520px;
+/* One window per camera, border-box so split screen tiles them exactly */
+.gl-window.gl-cam {
+    width: 480px;
+    box-sizing: border-box;
 }
 .gl-cam .gl-body {
     background: #d8d8d8;
     padding: 10px;
 }
-/* Win95-style tabs, one per camera, sitting on the viewfinder */
-.gl-cam-tabs {
-    display: flex;
-    gap: 2px;
-    padding-left: 4px;
+/* Split screen: the windows tile the desktop and griffinland.js fits each
+   viewfinder to its picture, centred on black; the clips list steps aside */
+.gl-cam-split .gl-body {
+    background: #000;
 }
-.gl-cam-tabs:empty {
+.gl-cam-split .gl-cam-screen {
+    box-sizing: border-box;
+    aspect-ratio: auto;
+    margin-left: auto;
+    margin-right: auto;
+    border-color: #000;
+}
+.gl-cam-split .gl-cam-said {
+    color: #a0a0a0;
+}
+.gl-cam-split .gl-cam-shutter-label {
+    color: #fff;
+}
+.gl-cam-split .gl-cam-clips {
     display: none;
-}
-.gl-cam-tab {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: -2px;
-    padding: 3px 12px 4px;
-    font-family: Tahoma, Geneva, sans-serif;
-    font-size: 12px;
-    color: #000;
-    background: #c8c8c8;
-    border: 2px outset #f0f0f0;
-    border-bottom: none;
-    border-radius: 0;
-    cursor: url('cursor-pointer.png') 8 0, pointer;
-}
-.gl-cam-tab-on {
-    position: relative;
-    z-index: 1;
-    padding-top: 5px;
-    font-weight: bold;
-    background: #d8d8d8;
-}
-.gl-cam-tab:disabled {
-    color: #808080;
-    cursor: default;
-}
-.gl-cam-tab-light {
-    width: 7px;
-    height: 7px;
-    background: #707070;
-    border: 1px solid #303030;
-    border-radius: 50%;
-}
-.gl-cam-tab-live .gl-cam-tab-light {
-    background: #30e030;
 }
 
 /* A 16:9 viewfinder with camcorder corner marks */
@@ -1628,8 +1633,8 @@ html.gated #gl-horizon {
         var(--mark) bottom right / 18px 2px, var(--mark) bottom right / 2px 18px;
     background-repeat: no-repeat;
 }
-/* An id, to beat the window kit's img rule */
-#cam-window .gl-cam-feed {
+/* Specific enough to beat the window kit's img rule */
+.gl-window.gl-cam .gl-cam-feed {
     display: block;
     width: 100%;
     height: 100%;
@@ -1698,8 +1703,16 @@ html.gated #gl-horizon {
 .gl-cam-controls {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     margin-top: 10px;
+}
+/* Two cameras' windows side by side are narrow: the buttons keep to one
+   line and the camera's name gives way instead */
+.gl-cam-controls .gl-btn {
+    flex: 0 0 auto;
+    min-width: 0;
+    padding: 4px 8px;
+    white-space: nowrap;
 }
 /* The record button: a red dot that turns into a stop square */
 .gl-cam-shutter {
@@ -2008,6 +2021,7 @@ html.gated #gl-horizon {
     .gl-birds,
     .gl-chair,
     .gl-chair-swing,
+    .gl-rope-lay,
     .gl-promo-marquee span,
     .gl-badge-construction,
     .gl-beacon,
