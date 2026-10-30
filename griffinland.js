@@ -1535,6 +1535,10 @@ var CAM_LABELS = ["arducam", "webcam"];
     var camOrder = [];            // the labels, in the server's order
     var split = false;
     var built = false;            // once main.js is watching, new windows need watchWindow
+    // Each visitor's page is one viewer: a made-up id, sent with its check-ins
+    // while a window's open, so griffin can see how many are watching.
+    // Nothing else about them is sent.
+    var viewerId = (Math.random().toString(36).slice(2) + "00000000").slice(0, 10);
 
     function camFetch(path, method) {
         return fetch(CAM_URL + path, { method: method || "GET", cache: "no-store" })
@@ -1711,7 +1715,7 @@ var CAM_LABELS = ["arducam", "webcam"];
         v.airBtn.classList.toggle("gl-cam-air-on", !!(s && s.on_air));
         v.airBtn.setAttribute("aria-pressed", !!(s && s.on_air));
         v.folderBtn.disabled = !s;
-        if (Date.now() > v.saidUntil) say(v, c && c.name ? c.name : "");
+        if (Date.now() > v.saidUntil) say(v, watching(s) || (c && c.name ? c.name : ""));
 
         v.clipList.innerHTML = "";
         (c ? c.clips : []).forEach(function(clip) {
@@ -1719,6 +1723,14 @@ var CAM_LABELS = ["arducam", "webcam"];
             li.appendChild(el("span", "gl-cam-clip-size", clip.mb + " MB"));
             v.clipList.appendChild(li);
         });
+    }
+
+    // Griffin's caption while on air: how many visitors have a window open.
+    // Off air it only speaks up if someone's still sat on the OFF AIR screen.
+    function watching(s) {
+        var n = s ? s.viewers || 0 : 0;
+        if (s && s.on_air) return "on air - " + (n ? n + " watching" : "nobody watching yet");
+        return n ? n + " watching" : "";
     }
 
     function anyOpen() {
@@ -1732,7 +1744,7 @@ var CAM_LABELS = ["arducam", "webcam"];
             allWindows().forEach(stopFeed);
             return;
         }
-        camFetch("/status").then(render).catch(function() { render(null); });
+        camFetch(isPublic ? "/status?viewer=" + viewerId : "/status").then(render).catch(function() { render(null); });
     }
     setInterval(checkIn, 1000);
 
