@@ -76,6 +76,8 @@ SIZES = ["1920x1080", "1280x720", "640x480"]
 
 # A camera sending the identical picture for this many seconds has frozen
 FROZEN_AFTER = 5
+# A camera that's sent pictures and then nothing for this long has stalled
+STALLED_AFTER = 6
 
 # Test patterns, one per test camera so they're easy to tell apart
 TEST_PATTERNS = ["testsrc2", "smptehdbars", "rgbtestsrc"]
@@ -218,6 +220,7 @@ class Camera:
             self.problem = "waiting for a picture"
         proc = self.proc = subprocess.Popen(self._command(size), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         threading.Thread(target=self._warn_if_dark, args=(proc,), daemon=True).start()
+        threading.Thread(target=self._watch_for_stall, args=(proc, time.time()), daemon=True).start()
 
         # ffmpeg's frames run together on the pipe; each JPEG starts FFD8 and
         # ends FFD9 (FF is never followed by D9 inside the image data)
@@ -271,6 +274,18 @@ class Camera:
             self._log("%s%s" % (self.problem, (":\n" + error) if error else ""))
         # A frozen camera counts as working at this size, so it's reopened at it
         return got or self.frozen
+
+    def _watch_for_stall(self, proc, started):
+        # A camera can go quiet mid-stream - the Arducam did, after a garbled
+        # USB transfer - and ffmpeg then waits for it forever. Once it's sent
+        # pictures, a few seconds of nothing gets it reopened instead.
+        while proc.poll() is None and not self.stopped:
+            time.sleep(1)
+            if (self.frame_at > started and not self.frozen
+                    and time.time() - self.frame_at > STALLED_AFTER):
+                self._log("No picture for %ds. Reopening it." % STALLED_AFTER)
+                proc.kill()
+                return
 
     def _warn_if_dark(self, proc):
         # Without camera permission, macOS opens the camera but never sends a
