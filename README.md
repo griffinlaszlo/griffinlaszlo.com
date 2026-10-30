@@ -18,6 +18,7 @@ tray clock and fonts are mocial's, and only the desktop changes.
 | `icons/` | Pixel desktop icons, drawn as SVG. |
 | `supabase/guestbook.sql` | Sets up the guestbook's table in Supabase. |
 | `tools/griffin-rig.py` | Cuts griffin's chairlift art into the animation layers in `gifs/griffin/`. |
+| `tools/crew/*.svg`, `tools/crew-build.py` | The other riders on the lift, drawn to match griffin's art, and the script that renders them into the layers in `gifs/crew/`. |
 | `tools/workstation-cam.py` | Serves the desk cam to local copies and records its clips (below). |
 | `tools/desk-cam.command` | Double-click to start the desk cam - server, public tunnel, and both camera windows. |
 
@@ -117,6 +118,14 @@ headings in `griffinland.css`. The desktop is forest green (`--gl-forest`).
   griffinland.js picks one thing for him to do - a sip, a shaka, sometimes
   both, or a look around (the `ACTIONS` list) - and griffinland.css eases
   each pose in and back out. Hover and he raises the beer in a cheers.
+- **The other riders** - every other chair behind griffin carries someone:
+  a couple (her cocoa steams, and every so often he waves) and a random
+  snowboarder filming on his phone, board swinging off his front foot. They're
+  drawn as SVG in `tools/crew/` to match griffin's art: his three-quarter
+  lounging pose, thin wobbly ink, marker-streaked fills. Each marks its moving
+  parts with an `L-` class, and `python3 tools/crew-build.py` (Pillow and
+  Chrome) renders each part as its own layer into `gifs/crew/`. Then bump
+  `CREW_VERSION` in griffinland.js. `CREW` there says which chair each rides.
 - **Calculator** - works like the Windows one, plus a lucky key.
 - **Guestbook** - sign it, pick a mood gif, see everyone's notes. Entries live
   in a Supabase table: `supabase/guestbook.sql` creates it (run it once in the

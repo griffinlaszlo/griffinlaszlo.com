@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 846" width="800" height="846">
+  <!-- A random snowboarder, in griffin's pose: three-quarter view, slumped
+       back, one arm draped along the seat back, the other holding his phone
+       up to film. Hood up over a beanie, a scruffy moustache, and the board
+       hanging off his front foot with the back foot resting on it. -->
+  <defs>
+    <filter id="wob" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="11" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="2.6" result="wobbled"/>
+      <!-- marker streaks: faint darker drags across every fill -->
+      <feTurbulence type="fractalNoise" baseFrequency="0.01 0.16" numOctaves="2" seed="4" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 -0.18" result="streak"/>
+      <feComposite in="streak" in2="wobbled" operator="in" result="streakIn"/>
+      <feMerge><feMergeNode in="wobbled"/><feMergeNode in="streakIn"/></feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#wob)" stroke="#161616" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+
+    <!-- hood falling back behind his shoulders -->
+    <path fill="#6a45b0" d="M232 330 Q226 262 290 240 Q352 226 384 270 Q404 306 392 352 L330 390 L250 388 Q230 368 232 330 Z"/>
+
+    <!-- draped arm, along the seat back to the left, mitten hanging over it -->
+    <path fill="#6a45b0" d="M282 384 Q214 396 160 404 Q122 410 118 432 Q122 452 150 450 Q214 444 290 432 Z"/>
+    <path fill="#c4c4c4" d="M112 420 Q100 432 104 452 Q110 474 128 472 Q146 470 148 452 Q150 432 134 422 Z"/>
+    <path fill="none" stroke-width="2" d="M118 448 Q126 456 136 452"/>
+
+    <!-- baggy khaki pants: thighs coming at you, knees apart -->
+    <path fill="#c9a46a" d="M330 492 Q318 540 340 576 Q356 604 390 606 Q414 604 424 588 L440 560 L470 600 Q492 622 526 610 Q556 596 556 566 Q552 530 528 500 Q488 470 420 470 Q360 472 330 492 Z"/>
+    <path fill="none" stroke-width="2" d="M424 588 Q428 560 444 540 M392 560 Q402 572 414 568"/>
+    <!-- shins dropping to the board -->
+    <path fill="#c9a46a" d="M354 590 Q380 640 424 708 L470 702 Q450 650 414 596 Z"/>
+    <path fill="#c9a46a" d="M478 600 Q520 630 566 652 L594 624 Q560 598 526 574 Z"/>
+
+    <!-- the board, under both feet, hanging off the front one -->
+    <g class="L-board">
+    <g transform="translate(560 706) rotate(-38)">
+      <rect x="-190" y="-30" width="380" height="60" rx="30" fill="#2b6fd6"/>
+      <path fill="#f2c230" stroke="none" d="M-150 -16 Q0 -30 150 -16 L150 -4 Q0 -18 -150 -4 Z"/>
+      <path fill="#f4f4f4" stroke="none" d="M-150 6 Q0 -8 150 6 L150 16 Q0 2 -150 16 Z"/>
+      <!-- bindings -->
+      <path fill="#262626" d="M-128 -38 L-82 -38 L-80 38 L-130 38 Z"/>
+      <path fill="#262626" d="M64 -38 L110 -38 L112 38 L62 38 Z"/>
+    </g>
+    </g>
+    <g class="L-front">
+    <!-- boots: back one resting on the board, front one strapped in -->
+    <path fill="#5a3d2b" d="M410 690 Q398 724 418 738 L462 734 Q476 722 468 696 Z"/>
+    <path fill="#5a3d2b" d="M556 628 Q548 660 566 670 L608 660 Q620 646 606 622 Z"/>
+    <path fill="#262626" d="M550 646 L614 634 L616 646 L552 658 Z"/>
+
+    <!-- the hoodie: leaning back to the left, like griffin -->
+    <path fill="#7d55c7" d="M262 392 Q300 360 350 356 L404 352 Q446 356 456 398 Q472 452 470 492 Q468 528 436 540 L362 548 Q328 546 316 516 Q290 460 262 392 Z"/>
+    <!-- kangaroo pocket and drawstrings -->
+    <path fill="#6a45b0" d="M342 470 Q390 462 446 466 L454 520 Q400 528 350 526 Z"/>
+    <path fill="none" stroke-width="2" d="M370 368 L366 418 M396 366 L404 414"/>
+
+    <!-- phone arm: up and out to the right, filming -->
+    <path fill="#7d55c7" d="M432 386 Q478 360 506 322 L534 340 Q508 388 456 428 Z"/>
+    <path fill="#c4c4c4" d="M500 300 Q512 286 530 292 Q546 302 540 322 Q534 342 514 340 Q496 334 496 316 Z"/>
+    <!-- the phone, back to us, camera lens and a red REC light -->
+    <g transform="rotate(-14 548 270)">
+      <rect x="528" y="236" width="40" height="70" rx="6" fill="#222"/>
+      <circle cx="540" cy="250" r="5" fill="#666"/>
+      <circle class="L-rec" cx="556" cy="250" r="3.4" fill="#e8323c" stroke="none"/>
+    </g>
+
+    <!-- head: three-quarter, tipped back a little -->
+    <g transform="rotate(-8 322 316)">
+      <ellipse cx="322" cy="318" rx="40" ry="47" fill="#f4c7a0"/>
+      <!-- charcoal beanie, folded brim, under the hood -->
+      <path fill="#3a3a3a" d="M280 304 Q282 254 324 250 Q366 252 368 302 Z"/>
+      <path fill="#2c2c2c" d="M276 292 L370 292 Q374 304 368 310 L280 310 Q272 302 276 292 Z"/>
+      <!-- relaxed, half-shut eyes -->
+      <path fill="none" stroke-width="2.4" d="M312 324 L326 322 M342 322 L354 320"/>
+      <path fill="none" stroke-width="1.6" d="M314 330 Q320 332 326 328"/>
+      <!-- nose, like griffin's: one little hook -->
+      <path fill="none" stroke-width="2.2" d="M338 328 Q344 340 336 344"/>
+      <!-- scruffy moustache and a lazy grin -->
+      <path fill="#6b4a2e" stroke-width="1.6" d="M322 350 Q336 344 352 350 Q346 356 336 354 Q328 356 322 350 Z"/>
+      <path fill="none" stroke-width="2.2" d="M326 362 Q338 368 350 360"/>
+    </g>
+    </g>
+  </g>
+</svg>

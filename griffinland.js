@@ -975,6 +975,32 @@ function buildRider() {
     return rider;
 }
 
+// The other riders: a couple and a random snowboarder, drawn to match
+// griffin's art (tools/crew/*.svg) and cut into layers by
+// tools/crew-build.py, which stack like his do. They ride every other chair
+// behind him, so he's never lost in a crowd, and each has a little going on:
+// her cocoa steams and he waves now and then; the snowboarder's board swings
+// off his front foot and his phone's REC light blinks.
+// Bump CREW_VERSION whenever tools/crew-build.py rewrites the art.
+var CREW_VERSION = 1;
+var CREW = {
+    2: { name: "couple", title: "a couple", layers: ["base", "steam", "wave"] },
+    4: { name: "boarder", title: "a random snowboarder", layers: ["back", "board", "front", "rec"] }
+};
+
+function buildCrew(who) {
+    var rider = el("div", "gl-crew gl-crew-" + who.name);
+    rider.title = who.title;
+    who.layers.forEach(function(layer) {
+        var img = el("img", "glc-" + layer);
+        img.src = "gifs/crew/" + who.name + "-" + layer + ".png?v=" + CREW_VERSION;
+        img.alt = "";
+        img.draggable = false;
+        rider.appendChild(img);
+    });
+    return rider;
+}
+
 function buildLift() {
     var lift = document.querySelector("#gl-horizon .gl-lift");
     if (!lift) return;
@@ -984,6 +1010,8 @@ function buildLift() {
         if (i === 0) {
             chair.classList.add("gl-chair-griffin");
             swing.appendChild(buildRider());
+        } else if (CREW[i]) {
+            swing.appendChild(buildCrew(CREW[i]));
         } else {
             var empty = el("img", "gl-chair-empty");
             empty.src = art("empty-chair.png");

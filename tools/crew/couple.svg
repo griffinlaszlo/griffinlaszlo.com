@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 846" width="800" height="846">
+  <!-- A couple sharing the chair, in griffin's pose: three-quarter view,
+       leaning back. His arm is draped along the seat back round her
+       (griffin's draped arm), the other hand up in a wave; she's tipped into
+       his shoulder with a mug of cocoa in both hands. Heads are griffin's
+       size, and the skis are his: wide, rounded, hanging at angles. -->
+  <defs>
+    <filter id="wob" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="21" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="2.6" result="wobbled"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.01 0.16" numOctaves="2" seed="6" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 -0.18" result="streak"/>
+      <feComposite in="streak" in2="wobbled" operator="in" result="streakIn"/>
+      <feMerge><feMergeNode in="wobbled"/><feMergeNode in="streakIn"/></feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#wob)" stroke="#161616" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+
+    <!-- ===== behind them: his arm along the seat back, round her ===== -->
+    <path fill="#e8562e" d="M420 372 Q320 352 210 362 Q160 368 150 392 Q156 414 192 412 Q300 404 410 414 Z"/>
+
+    <!-- ===== her legs (white pants), knees together, swung left ===== -->
+    <path fill="#f3f3f3" d="M206 506 Q188 556 212 592 Q234 620 274 614 Q306 606 322 580 Q336 540 322 504 Q276 488 206 506 Z"/>
+    <path fill="none" stroke-width="2" d="M270 608 Q274 580 284 560"/>
+    <path fill="#f3f3f3" d="M216 588 Q214 650 204 706 L242 712 Q254 652 266 604 Z"/>
+    <path fill="#f3f3f3" d="M272 604 Q282 656 280 710 L316 708 Q318 652 312 590 Z"/>
+
+    <!-- ===== his legs (navy), knees spread like griffin's ===== -->
+    <path fill="#2d3a6b" d="M400 486 Q384 536 406 576 Q424 606 460 604 Q484 600 492 580 L508 556 L536 592 Q560 616 596 604 Q628 590 624 556 Q618 516 590 490 Q544 460 474 462 Q420 466 400 486 Z"/>
+    <path fill="none" stroke="#5a6aa0" stroke-width="2" d="M492 580 Q496 552 514 534"/>
+    <path fill="#2d3a6b" d="M416 588 Q432 644 450 702 L490 696 Q478 642 466 594 Z"/>
+    <path fill="#2d3a6b" d="M544 598 Q572 644 600 690 L634 670 Q612 628 592 594 Z"/>
+
+    <!-- ===== her body: leaning in, tipped towards him ===== -->
+    <g transform="rotate(9 270 520)">
+      <!-- blonde hair falling to her shoulders, behind -->
+      <path fill="#e6b84a" d="M212 300 Q200 352 212 398 L332 398 Q344 352 332 300 Z"/>
+      <!-- pink puffer: rounded, padded -->
+      <path fill="#ea5a8e" d="M186 420 Q192 378 240 368 L304 366 Q350 372 356 414 Q362 470 352 512 Q344 540 312 542 L232 544 Q198 540 192 510 Q180 466 186 420 Z"/>
+      <path fill="none" stroke-width="2" d="M190 456 Q270 448 358 452 M192 494 Q270 486 356 490"/>
+      <!-- the mug of cocoa, both mittens round it, steam -->
+      <path fill="#f4f4f4" d="M250 424 L292 424 L288 474 Q270 482 254 474 Z"/>
+      <path fill="none" stroke-width="2.4" d="M292 434 Q308 438 304 456 Q300 464 288 462"/>
+      <path fill="#6b4a2e" d="M252 426 Q270 434 290 426 Q270 420 252 426 Z"/>
+      <path fill="#c4c4c4" d="M234 444 Q226 464 240 474 Q256 478 260 462 Q262 446 248 442 Z"/>
+      <path fill="#c4c4c4" d="M280 452 Q274 470 288 478 Q302 480 304 466 Q304 450 292 448 Z"/>
+      <path class="L-steam" fill="none" stroke="#f4f4f4" stroke-width="3" d="M262 410 Q256 398 264 390 Q272 382 266 370 M280 410 Q274 398 282 390"/>
+      <!-- her head, on his shoulder -->
+      <g transform="rotate(8 272 318)">
+        <ellipse cx="272" cy="320" rx="46" ry="52" fill="#f6cba6"/>
+        <!-- white helmet with goggles pushed up on it -->
+        <path fill="#f4f4f4" d="M222 304 Q224 238 274 234 Q324 238 326 302 Q274 286 222 304 Z"/>
+        <path fill="#9bd2f0" d="M232 268 Q274 252 318 268 Q320 286 300 288 Q286 286 274 278 Q262 286 248 288 Q228 286 232 268 Z"/>
+        <path fill="none" stroke="#f4f4f4" stroke-width="2.4" d="M246 268 L256 266"/>
+        <!-- fringe -->
+        <path fill="#e6b84a" d="M226 304 Q240 292 266 294 Q290 296 300 308 Q270 300 246 312 Z"/>
+        <!-- eyes shut, smiling, rosy -->
+        <path fill="none" stroke-width="2.4" d="M254 326 Q261 318 268 326 M282 324 Q289 316 296 324"/>
+        <path fill="none" stroke-width="2.2" d="M278 334 Q284 344 276 348"/>
+        <path fill="none" stroke-width="2.4" d="M262 358 Q274 366 288 356"/>
+        <circle cx="250" cy="342" r="7" fill="#f2a0a0" stroke="none"/>
+        <circle cx="300" cy="340" r="6" fill="#f2a0a0" stroke="none"/>
+      </g>
+    </g>
+    <!-- his mitten, round on her far shoulder -->
+    <path fill="#c4c4c4" d="M178 368 Q160 378 164 398 Q170 418 192 416 Q212 412 212 392 Q210 372 194 368 Z"/>
+
+    <!-- ===== his body: leaning back ===== -->
+    <g transform="rotate(-6 500 520)">
+      <!-- red-orange jacket: rounded, padded -->
+      <path fill="#e8562e" d="M380 404 Q392 360 446 352 L516 350 Q566 356 574 404 Q584 460 576 500 Q568 530 536 534 L444 538 Q408 534 400 504 Q384 452 380 404 Z"/>
+      <path fill="none" stroke-width="2" d="M486 360 L480 530 M470 384 L488 384"/>
+      <!-- the wave (layer: wave) -->
+      <g class="L-wave">
+      <path fill="#e8562e" d="M548 386 Q590 362 612 318 L642 332 Q626 390 574 424 Z"/>
+      <path fill="#c4c4c4" d="M608 300 Q616 278 634 282 Q642 268 656 276 Q668 290 660 312 Q652 332 630 332 Q610 328 608 310 Z"/>
+      <path fill="none" stroke-width="1.8" d="M632 284 L630 300 M644 280 L640 298"/>
+      </g>
+      <!-- his head: green beanie with a pom-pom, beard, looking at her -->
+      <g transform="rotate(-4 476 296)">
+        <ellipse cx="476" cy="298" rx="46" ry="52" fill="#e2ad80"/>
+        <path fill="#7a4e2c" d="M432 308 Q434 354 476 354 Q518 354 520 308 Q510 336 476 338 Q442 336 432 308 Z"/>
+        <path fill="#3f9a4a" d="M428 286 Q430 230 478 226 Q526 230 528 284 Z"/>
+        <path fill="#2f7d3a" d="M424 274 L532 274 Q536 288 530 294 L428 294 Q420 286 424 274 Z"/>
+        <path fill="none" stroke-width="1.8" d="M446 276 L446 292 M466 276 L466 294 M486 276 L486 294 M506 276 L506 292"/>
+        <circle cx="478" cy="220" r="16" fill="#f4f4f4"/>
+        <path fill="none" stroke-width="2.6" d="M452 312 Q456 306 462 312 M482 310 Q486 304 492 310"/>
+        <path fill="none" stroke-width="2.2" d="M470 318 Q476 330 466 334"/>
+        <path fill="none" stroke-width="2.4" d="M458 340 Q472 350 486 338"/>
+      </g>
+    </g>
+
+    <!-- ===== skis, in front of the legs, hanging at angles like griffin's ===== -->
+    <g fill="#cdcdcd">
+      <!-- hers, tips together -->
+      <path d="M200 580 Q214 566 234 572 L250 806 Q244 828 222 824 Q206 818 208 798 Z"/>
+      <path d="M302 576 Q318 568 334 580 L284 812 Q274 830 256 822 Q244 812 250 794 Z"/>
+      <!-- his, splayed like griffin's -->
+      <path d="M512 462 Q532 452 548 464 L488 812 Q480 832 458 826 Q444 818 448 798 Z"/>
+      <path d="M690 430 Q712 426 720 446 L600 762 Q588 780 568 772 Q556 762 562 744 Z"/>
+    </g>
+    <g fill="none" stroke-width="1.8">
+      <path d="M222 620 L226 670 M230 720 L234 780"/>
+      <path d="M314 620 L304 670 M290 720 L276 780"/>
+      <path d="M526 510 L518 560 M506 630 L488 760"/>
+      <path d="M698 470 L682 510 M656 580 L604 720"/>
+    </g>
+  </g>
+</svg>

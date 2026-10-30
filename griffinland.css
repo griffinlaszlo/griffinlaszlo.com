@@ -2137,3 +2137,61 @@ html.gated #gl-horizon {
         animation: none !important;
     }
 }
+
+/* The other riders (buildCrew in griffinland.js): layers on the same canvas
+   as griffin's, stacked with no offsets. The transform-origins are the
+   joints, as a share of the canvas: his shoulder for the wave, the front
+   binding for the board. */
+.gl-crew {
+    position: relative;
+    width: 84px;
+    height: 89px;
+    pointer-events: auto;
+}
+.gl-crew img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+/* The couple: steam curling off her cocoa, and every so often he waves */
+.glc-steam {
+    animation: glc-steam 2.6s ease-in-out infinite;
+}
+@keyframes glc-steam {
+    0% { opacity: 0; transform: translateY(1.5%); }
+    30% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-3%); }
+}
+.glc-wave {
+    transform-origin: 67.3% 45.8%;
+    animation: glc-wave 7s ease-in-out infinite;
+}
+@keyframes glc-wave {
+    0%, 62%, 94%, 100% { transform: none; }
+    68% { transform: rotate(-12deg); }
+    74% { transform: rotate(8deg); }
+    80% { transform: rotate(-12deg); }
+    86% { transform: rotate(8deg); }
+}
+/* The snowboarder: the board swings off his front foot, the phone records */
+.glc-board {
+    transform-origin: 73.8% 76.6%;
+    animation: glc-board 2.6s ease-in-out infinite alternate;
+}
+/* Small enough that the back boot stays resting on the board */
+@keyframes glc-board {
+    from { transform: rotate(-4deg); }
+    to { transform: rotate(2.5deg); }
+}
+.glc-rec {
+    animation: glc-rec 1.2s steps(1, end) infinite;
+}
+@keyframes glc-rec {
+    50% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .gl-crew img {
+        animation: none !important;
+    }
+}
