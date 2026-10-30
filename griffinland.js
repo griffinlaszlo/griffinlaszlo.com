@@ -773,10 +773,9 @@ document.getElementById("gl-webring-random").addEventListener("click", function(
 });
 
 // ===== The horizon ===========================================================
-// A white line-drawn treeline across the bottom of the desktop, with a
-// chairlift running over it: the cable is drawn in with the trees, the
-// towers are doodled in colour on their own layer, and the chairs (one of
-// them carrying griffin) ride along on top.
+// A snowy forest across the bottom of the desktop, with a chairlift running
+// over it: the towers and ropes are drawn on their own layers, and the
+// chairs (one of them carrying griffin) ride along on top.
 // Redrawn to fit whenever the window changes size.
 //
 // The lift runs both ways, like a real one: the rope is one loop, and the
@@ -784,7 +783,7 @@ document.getElementById("gl-webring-random").addEventListener("click", function(
 // The far side is drawn a little higher, with smaller, paler chairs facing
 // the other way, and sits behind the towers so the poles pass in front of it.
 
-var GROUND_Y = 160;              // the ground line, in the horizon's 170px
+var GROUND_Y = 160;              // where the snow starts, in the horizon's 170px
 var CABLE_LEFT = 34;             // the cable's height at the left edge...
 var CABLE_RIGHT = 16;            // ...and the right, so it climbs a little
 var LIFT_SECONDS = 70;           // one chair's trip across the screen
@@ -798,34 +797,138 @@ function backCableY(x, W) {
     return cableY(x, W) - BACK_UP;
 }
 
+// The forest under the lift: snowy firs with groves of bare white aspens,
+// the way the hills look round Park City, standing in snow. Three rows, each
+// smaller and paler than the one in front, so it reads as going back into
+// the distance. A fresh forest grows every time it's drawn.
+//
+// Each fir is a trunk and a stack of branch tiers, drawn bottom up: every
+// tier a drooping skirt with a ragged hem, darker on its shaded right, with
+// snow lying along its upper edges (white where the light catches it, blue
+// in the shade). An aspen is a thin white trunk with dark knots and a few
+// bare grey branches.
+var FOREST_ROWS = [
+    { base: [149, 153], h: [26, 46], gap: [9, 18],
+      c: { fill: "#4b8a66", shade: "#3f7a59", snow: "#e3ecee", snowShade: "#b9cfd6", trunk: "#56625a" } },
+    { base: [155, 159], h: [40, 66], gap: [16, 34],
+      c: { fill: "#25603e", shade: "#1b4c30", snow: "#f2f6f7", snowShade: "#c4d5de", trunk: "#4a3a2c" } },
+    { base: [162, 167], h: [58, 92], gap: [44, 110],
+      c: { fill: "#174a2c", shade: "#0f3620", snow: "#fbfdfd", snowShade: "#c9d8e2", trunk: "#3f2d20" } }
+];
+var ASPEN_COLOURS = { bark: "#efede6", barkEdge: "#9a9a92", knot: "#2b2b28", twig: "#8d8a80" };
+var ASPEN_SHARE = 0.35;          // how often a spot in the nearer rows is a grove instead of a fir
+
+function pt(x, y) {
+    return x.toFixed(1) + " " + y.toFixed(1);
+}
+
+function firSVG(x, base, h, c) {
+    var tw = Math.max(1.4, h * 0.045);
+    var svg = '<rect x="' + (x - tw / 2).toFixed(1) + '" y="' + (base - h * 0.16).toFixed(1) +
+              '" width="' + tw.toFixed(1) + '" height="' + (h * 0.16).toFixed(1) + '" fill="' + c.trunk + '"/>';
+    var n = Math.max(5, Math.round(h / 8));
+    var tiers = [];
+    for (var i = 0; i < n; i++) {
+        var t = i / (n - 1);
+        var yTop = base - h + t * h * 0.78;
+        tiers.push({ yTop: yTop, yBot: yTop + h * (0.15 + 0.07 * t),
+                     w: h * (0.05 + 0.29 * t) * rand(0.82, 1.18), lean: rand(-0.6, 0.6) });
+    }
+    for (var k = n - 1; k >= 0; k--) {
+        var T = tiers[k], ax = x + T.lean, left = x - T.w, right = x + T.w;
+        // the ragged hem: tips hang down, notches pull up between them
+        var hem = [], teeth = Math.max(3, Math.round(T.w / 5));
+        for (var j = 1; j < teeth; j++) {
+            hem.push(pt(left + (right - left) * j / teeth,
+                        j % 2 ? T.yBot - rand(1.5, h * 0.05 + 2) : T.yBot + rand(-0.5, 1.5)));
+        }
+        var lTip = pt(left, T.yBot + rand(0, 2)), rTip = pt(right, T.yBot + rand(0, 2));
+        var sy = T.yTop + (T.yBot - T.yTop) * 0.45;
+        svg += '<path fill="' + c.fill + '" d="M' + pt(ax, T.yTop) + ' L' + lTip + ' L' + hem.join(" L") + ' L' + rTip + ' Z"/>' +
+               '<path fill="' + c.shade + '" d="M' + pt(ax, T.yTop) + ' L' + pt(x + T.w * 0.08, T.yBot - h * 0.03) +
+                   ' L' + pt(right - T.w * 0.25, T.yBot - rand(0, 2)) + ' L' + rTip + ' Z"/>' +
+               '<path fill="' + c.snow + '" d="M' + pt(ax, T.yTop - 0.5) + ' L' + pt(left + T.w * 0.12, T.yBot - 0.5) +
+                   ' Q' + pt(left + T.w * 0.4, T.yBot - h * 0.06) + ' ' + pt(x - T.w * 0.15, sy) + ' Z"/>' +
+               '<path fill="' + c.snowShade + '" d="M' + pt(ax, T.yTop - 0.5) + ' L' + pt(right - T.w * 0.15, T.yBot - 1) +
+                   ' Q' + pt(right - T.w * 0.5, T.yBot - h * 0.05) + ' ' + pt(x + T.w * 0.12, sy + 1) + ' Z"/>';
+    }
+    return svg;
+}
+
+function aspenSVG(x, base, h, c) {
+    var tw = rand(2.2, 3.6), lean = rand(-3, 3);
+    var svg = '<path d="M' + pt(x - tw / 2, base) + ' L' + pt(x + lean - tw * 0.25, base - h) +
+              ' L' + pt(x + lean + tw * 0.25, base - h) + ' L' + pt(x + tw / 2, base) +
+              ' Z" fill="' + c.bark + '" stroke="' + c.barkEdge + '" stroke-width="0.6"/>';
+    for (var k = 0; k < Math.round(h / 12); k++) {
+        var ky = base - rand(h * 0.1, h * 0.75);
+        svg += '<ellipse cx="' + (x + lean * (base - ky) / h).toFixed(1) + '" cy="' + ky.toFixed(1) +
+               '" rx="' + (tw * 0.35).toFixed(1) + '" ry="' + rand(0.6, 1.3).toFixed(1) + '" fill="' + c.knot + '"/>';
+    }
+    var twigs = "";
+    for (var b = 0; b < 7; b++) {
+        var by = base - h * rand(0.55, 0.97), bx = x + lean * (base - by) / h, dir = b % 2 ? 1 : -1;
+        twigs += ' M' + pt(bx, by) + ' Q' + pt(bx + dir * rand(4, 9), by - rand(3, 7)) + ' ' + pt(bx + dir * rand(8, 16), by - rand(8, 16));
+    }
+    return svg + '<path d="' + twigs + '" fill="none" stroke="' + c.twig + '" stroke-width="0.9" stroke-linecap="round"/>';
+}
+
+var forestURL = null;
+
 function drawTrees() {
     var holder = document.querySelector("#gl-horizon .gl-trees");
     if (!holder) return;
     var W = Math.max(320, window.innerWidth);
     var base = GROUND_Y;
-    var d = "";
 
-    var x = rand(10, 40);
-    while (x < W) {
-        var h = rand(26, 62), w = h * 0.36;
-        var top = base - h;
-        // A three-tier pine in outline, then its trunk
-        d += "M" + x + " " + top +
-             " L" + (x - w * 0.55) + " " + (top + h * 0.38) + " L" + (x - w * 0.25) + " " + (top + h * 0.38) +
-             " L" + (x - w * 0.8) + " " + (top + h * 0.7) + " L" + (x - w * 0.4) + " " + (top + h * 0.7) +
-             " L" + (x - w) + " " + (base - 6) + " L" + (x + w) + " " + (base - 6) +
-             " L" + (x + w * 0.4) + " " + (top + h * 0.7) + " L" + (x + w * 0.8) + " " + (top + h * 0.7) +
-             " L" + (x + w * 0.25) + " " + (top + h * 0.38) + " L" + (x + w * 0.55) + " " + (top + h * 0.38) + " Z" +
-             " M" + x + " " + (base - 6) + " V" + base;
-        // and now and then a tuft of grass
-        if (Math.random() < 0.5) {
-            var g = x + w + rand(10, 30);
-            d += " M" + g + " " + base + " l3 -7 l3 7 M" + (g + 4) + " " + base + " l3 -5 l3 5";
-        }
-        x += rand(70, 190);
+    // A soft haze low behind the trees, then the rows, back to front; the
+    // snowy ground goes in just before the front row, so it covers the far
+    // rows' feet and the near trees stand on it
+    var art = '<defs><linearGradient id="gl-haze" x1="0" y1="0" x2="0" y2="1">' +
+              '<stop offset="0" stop-color="#ffffff" stop-opacity="0"/>' +
+              '<stop offset="1" stop-color="#e8f1ee" stop-opacity="0.25"/></linearGradient></defs>' +
+              '<rect x="0" y="95" width="' + W + '" height="60" fill="url(#gl-haze)"/>';
+    var ground = "M0 " + (base - 2);
+    for (var gx = 0; gx <= W; gx += 40) {
+        ground += " Q" + pt(gx + 20, base - 5 + rand(-2, 2)) + " " + pt(gx + 40, base - 3 + rand(-1.5, 1.5));
     }
+    ground += " L" + W + " 170 L0 170 Z";
 
-    holder.innerHTML = '<svg viewBox="0 0 ' + W + ' 170" width="' + W + '" height="170"><path d="' + d + '"/></svg>';
+    FOREST_ROWS.forEach(function(row, ri) {
+        var front = ri === FOREST_ROWS.length - 1;
+        if (front) {
+            art += '<path d="' + ground + '" fill="#f3f7f8"/>' +
+                   '<path d="M0 ' + (base + 2) + ' Q' + pt(W * 0.3, base - 1) + ' ' + pt(W * 0.6, base + 3) + ' T' + pt(W, base + 1) +
+                   '" fill="none" stroke="#cdd9df" stroke-width="2"/>';
+        }
+        var x = rand(-10, 10);
+        while (x < W + 20) {
+            var h = rand(row.h[0], row.h[1]), foot = rand(row.base[0], row.base[1]);
+            if (ri > 0 && Math.random() < ASPEN_SHARE) {
+                var trunks = 3 + Math.floor(Math.random() * 3);
+                for (var a = 0; a < trunks; a++) {
+                    art += aspenSVG(x + a * rand(5, 9), foot + rand(-1, 2), h * rand(0.9, 1.25), ASPEN_COLOURS);
+                }
+                x += rand(row.gap[0], row.gap[1]) + 18;
+                continue;
+            }
+            if (front) {
+                // the near firs cast a little blue shadow on the snow
+                art += '<ellipse cx="' + (x + h * 0.08).toFixed(1) + '" cy="' + (foot + 1).toFixed(1) +
+                       '" rx="' + (h * 0.28).toFixed(1) + '" ry="2.4" fill="#b7c9d2" opacity="0.7"/>';
+            }
+            art += firSVG(x, foot, h, row.c);
+            x += rand(row.gap[0], row.gap[1]);
+        }
+    });
+
+    // Thousands of shapes, so the forest is drawn once into an image: the
+    // chairs moving over it then never make the browser redraw a tree
+    if (forestURL) URL.revokeObjectURL(forestURL);
+    forestURL = URL.createObjectURL(new Blob([
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' 170" width="' + W + '" height="170">' + art + '</svg>'
+    ], { type: "image/svg+xml" }));
+    holder.innerHTML = '<img src="' + forestURL + '" width="' + W + '" height="170" alt="" draggable="false">';
 
     // The lift, in three layers: the far rope and its wheel trains, then the
     // towers in front of it, then the near rope riding over their wheels

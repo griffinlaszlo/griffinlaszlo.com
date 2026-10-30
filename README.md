@@ -88,9 +88,13 @@ headings in `griffinland.css`. The desktop is forest green (`--gl-forest`).
   sites linking prev / next / random around the ring. Ours links mocial.)
 - **Snow trail** - white snowflakes drift down off the cursor, swaying as they
   fall. On by default, toggled in View.
-- **The horizon** - a white treeline drawn to fit the window, with a
+- **The horizon** - a snowy forest drawn to fit the window, with a
   chairlift running over it, the dino walking along the ground and birds
-  going over. The lift towers are doodled in colour to sit with the chair art
+  going over. The forest is three rows of firs, each smaller and paler
+  going back, with groves of bare white aspens like the hills round Park
+  City (`firSVG()`, `aspenSVG()`, `FOREST_ROWS`). It's random, so a new one
+  grows on every load, and it's drawn once into an image so the moving
+  chairs never make the browser redraw it. The lift towers are doodled in colour to sit with the chair art
   (`towerSVG()`: blue pole, ladder, yellow pad, braced cross-arm and the wheel
   train the cable rides over), with a wobble filter on every line.
   The lift runs both ways: a second rope behind carries chairs back down,
