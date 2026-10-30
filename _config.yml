@@ -1,0 +1,7 @@
+# GitHub Pages builds the site with Jekyll, which publishes every file in the
+# repo unless it's listed here. These are docs and tools the site never loads,
+# so they stay in the repo but not on griffinlaszlo.com.
+exclude:
+  - README.md
+  - tools
+  - supabase
