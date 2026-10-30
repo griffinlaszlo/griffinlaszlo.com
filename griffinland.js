@@ -1869,8 +1869,9 @@ var CAM_LABELS = ["arducam", "webcam"];
             var above = Math.floor((roomH - fitH) / 2);
             setScreen(v, fitW + "px", fitH + "px", above + "px");
             // Whatever borders and margins did to the sum, the window ends
-            // exactly at the taskbar
-            v.screen.style.marginBottom = Math.max(0, above + h - v.win.getBoundingClientRect().height) + "px";
+            // exactly at the taskbar (offsetHeight, which a fly-in that's
+            // still shrinking the window doesn't throw off)
+            v.screen.style.marginBottom = Math.max(0, above + h - v.win.offsetHeight) + "px";
         });
     }
 

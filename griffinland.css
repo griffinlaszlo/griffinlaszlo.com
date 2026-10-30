@@ -1597,6 +1597,12 @@ html.gated #gl-horizon {
     margin-right: auto;
     border-color: #000;
 }
+/* Padding, not margin, above the controls: the viewfinder's margins centre
+   it, and a margin here would merge with them and throw the sum off */
+.gl-cam-split .gl-cam-controls {
+    margin-top: 0;
+    padding-top: 10px;
+}
 .gl-cam-split .gl-cam-said {
     color: #a0a0a0;
 }
@@ -1605,6 +1611,12 @@ html.gated #gl-horizon {
 }
 .gl-cam-split .gl-cam-clips {
     display: none;
+}
+/* Phone-sized screens stack every window anyway, so there's nothing to split */
+@media screen and (max-width: 960px) {
+    .gl-cam-split-btn {
+        display: none;
+    }
 }
 
 /* A 16:9 viewfinder with camcorder corner marks */

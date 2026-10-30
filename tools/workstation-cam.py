@@ -6,15 +6,15 @@ records clips from them to the Desktop.
     python3 tools/workstation-cam.py
 
 Leave it running, open griffinland locally (http://localhost:8900) and the
-"desk cam" icon shows the live feed, with a tab for each camera and a record
+"desk cam" icon opens a window for each camera, each with its own record
 button. Everything is on http://127.0.0.1:8080, and ?cam= picks the camera by
 its label (the first one when it's left off):
 
     GET  /snapshot?cam=webcam   the latest frame, as a JPEG
     GET  /stream?cam=webcam     the live feed as MJPEG, for an <img>
-    GET  /status                JSON: the cameras, recording or not, recent clips
+    GET  /status                JSON: each camera, recording or not, its recent clips
     POST /record/start?cam=...  start a clip from that camera
-    POST /record/stop           finish it - it lands in ~/Desktop/workstation cam/
+    POST /record/stop?cam=...   finish it - it lands in ~/Desktop/workstation cam/
     POST /clips/open            show that folder in Finder
     POST /air/on, /air/off      put the cameras on (or off) the public view
 
@@ -30,12 +30,13 @@ until the ON AIR button in the window says so, every time this starts:
                                 frames and the upload stays at about one a second
 
 Each camera has its own ffmpeg reading it the whole time and keeping the
-latest frame, so switching cameras is instant. Recording starts one more
-ffmpeg that encodes those same frames to an mp4, so the live view keeps
-going while a clip records.
+latest frame. Recording starts one more ffmpeg for that camera, encoding
+those same frames to an mp4, so the live view keeps going while a clip
+records - and both cameras can record at once.
 
 Cameras are found by part of their name. The defaults are the two on the
-desk - the Arducam calls itself "USB Camera" - and --camera label=name
+desk - the Arducam calls itself "USB Camera", and it's mounted upside down,
+so @180 turns its picture the right way up - and --camera label=name[@180]
 replaces them (once per camera; --list shows the names). It's fine to start
 this before plugging them in: it keeps looking, and picks a camera back up
 if it's unplugged and plugged back in. A name of "test" serves a test
@@ -61,7 +62,7 @@ from urllib.parse import parse_qs, urlparse
 FFMPEG = "ffmpeg"
 
 # label=part of the camera's name, in the order the window's tabs show them
-DEFAULT_CAMERAS = ["arducam=USB Camera", "webcam=NexiGo"]
+DEFAULT_CAMERAS = ["arducam=USB Camera@180", "webcam=NexiGo"]
 
 # Sizes to try, best first. Both desk cameras do 1080p at 30fps; a camera
 # that refuses one size gets the next.
@@ -105,11 +106,12 @@ def list_cameras():
 class Camera:
     """Reads one camera with ffmpeg and keeps the latest JPEG frame."""
 
-    def __init__(self, label, want, fps, pattern):
+    def __init__(self, label, want, fps, pattern, flip):
         self.label = label
         self.want = want.lower()
         self.fps = fps
         self.pattern = pattern
+        self.flip = flip  # turned 180 degrees, for a camera mounted upside down
         self.name = None
         self.size = None
         self.problem = "starting up"
@@ -180,7 +182,8 @@ class Camera:
             source = ["-re", "-f", "lavfi", "-i", "%s=size=%s:rate=%d" % (self.pattern, size, self.fps)]
         else:
             source = ["-f", "avfoundation", "-framerate", str(self.fps), "-video_size", size, "-i", self.name]
-        return ([FFMPEG, "-hide_banner", "-loglevel", "error"] + source +
+        turn = ["-vf", "hflip,vflip"] if self.flip else []
+        return ([FFMPEG, "-hide_banner", "-loglevel", "error"] + source + turn +
                 ["-f", "image2pipe", "-c:v", "mjpeg", "-q:v", "4", "-"])
 
     def _capture(self, size):
@@ -232,15 +235,16 @@ class Camera:
 
 
 class Recorder:
-    """Encodes one camera's frames to an mp4 while recording."""
+    """Encodes one camera's frames to an mp4 while recording. Each camera
+    has its own, so both can record at once."""
 
-    def __init__(self, folder, fps, max_seconds):
+    def __init__(self, camera, folder, fps, max_seconds):
+        self.camera = camera
         self.folder = folder
         self.fps = fps
         self.max_seconds = max_seconds
         self.lock = threading.Lock()        # guards starting and stopping
         self.write_lock = threading.Lock()  # one writer to ffmpeg's stdin at a time
-        self.camera = None
         self.proc = None
         self.path = None
         self.started = 0.0
@@ -251,15 +255,14 @@ class Recorder:
     def seconds(self):
         return round(time.time() - self.started, 1) if self.proc else 0
 
-    def start(self, camera):
+    def start(self):
         with self.lock:
             if self.proc:
                 return self.path
-            if not camera.live():
+            if not self.camera.live():
                 raise RuntimeError("no picture to record yet")
             self.folder.mkdir(parents=True, exist_ok=True)
-            self.camera = camera
-            self.path = self.folder / datetime.now().strftime(camera.label + " %Y-%m-%d %H.%M.%S.mp4")
+            self.path = self.folder / datetime.now().strftime(self.camera.label + " %Y-%m-%d %H.%M.%S.mp4")
             # The feeder below hands over a frame on every tick of the clock,
             # repeating the last one if the camera's running slow, so the clip
             # plays back at the speed it happened
@@ -312,10 +315,11 @@ class Recorder:
         log("Saved %s (%.1f MB)" % (path.name, path.stat().st_size / 1e6))
         return path
 
-    def clips(self, limit=5):
+    def clips(self, limit=3):
+        """This camera's latest clips, leaving out one still being recorded."""
         if not self.folder.exists():
             return []
-        files = sorted(self.folder.glob("*.mp4"), key=lambda p: p.stat().st_mtime, reverse=True)
+        files = sorted(self.folder.glob(self.camera.label + " *.mp4"), key=lambda p: p.stat().st_mtime, reverse=True)
         return [{"name": p.name, "mb": round(p.stat().st_size / 1e6, 1)}
                 for p in files[:limit] if p != self.path or not self.proc]
 
@@ -332,7 +336,7 @@ class Air:
         self.on = on
 
 
-def make_handler(cameras, recorder, air, port):
+def make_handler(cameras, recorders, folder, air, port):
     allowed_hosts = {"127.0.0.1:%d" % port, "localhost:%d" % port}
 
     class Handler(BaseHTTPRequestHandler):
@@ -369,14 +373,15 @@ def make_handler(cameras, recorder, air, port):
             self._send(code, json.dumps(data).encode(), "application/json", origin)
 
         def _status(self):
+            def camera_status(c):
+                status = c.status()
+                recorder = recorders[c.label]
+                status.update(recording=recorder.recording(), seconds=recorder.seconds(),
+                              clips=recorder.clips())
+                return status
             return {
-                "cameras": [c.status() for c in cameras],
-                "recording": recorder.recording(),
-                "recording_cam": recorder.camera.label if recorder.recording() else None,
-                "seconds": recorder.seconds(),
-                "clip": recorder.path.name if recorder.recording() else None,
-                "folder": str(recorder.folder),
-                "clips": recorder.clips(),
+                "cameras": [camera_status(c) for c in cameras],
+                "folder": str(folder),
                 "on_air": air.on,
                 "public_url": PUBLIC_URL,
             }
@@ -436,25 +441,25 @@ def make_handler(cameras, recorder, air, port):
                 return self._send(403, b"local pages only", "text/plain", None)
             path = urlparse(self.path).path
 
-            if path == "/record/start":
+            if path in ("/record/start", "/record/stop"):
                 camera = self._camera()
                 if camera is None:
                     return self._json({"error": "no camera by that name"}, origin, 404)
-                try:
-                    recorder.start(camera)
-                except RuntimeError as e:
-                    return self._json({"error": str(e)}, origin, 409)
-                return self._json(self._status(), origin)
-
-            if path == "/record/stop":
+                recorder = recorders[camera.label]
+                if path == "/record/start":
+                    try:
+                        recorder.start()
+                    except RuntimeError as e:
+                        return self._json({"error": str(e)}, origin, 409)
+                    return self._json(self._status(), origin)
                 saved = recorder.stop()
                 status = self._status()
                 status["saved"] = saved.name if saved else None
                 return self._json(status, origin)
 
             if path == "/clips/open":
-                recorder.folder.mkdir(parents=True, exist_ok=True)
-                subprocess.run(["open", str(recorder.folder)])
+                folder.mkdir(parents=True, exist_ok=True)
+                subprocess.run(["open", str(folder)])
                 return self._json({"ok": True}, origin)
 
             if path in ("/air/on", "/air/off"):
@@ -517,9 +522,10 @@ def make_public_handler(cameras, air):
 
 def main():
     parser = argparse.ArgumentParser(description="Serve the desk cameras to griffinland and record clips.")
-    parser.add_argument("--camera", action="append", metavar="LABEL=NAME",
+    parser.add_argument("--camera", action="append", metavar="LABEL=NAME[@180]",
                         help="a camera to serve: a short label, then part of its name ('test' for a test "
-                             "pattern). Give it once per camera. Default: %s" % " ".join(DEFAULT_CAMERAS))
+                             "pattern), and @180 to turn its picture upside down. Give it once per camera. "
+                             "Default: %s" % " ".join(DEFAULT_CAMERAS))
     parser.add_argument("--port", type=int, default=8080)
     parser.add_argument("--public-port", type=int, default=8081,
                         help="the view-only listener the tunnel points at (default: 8081)")
@@ -536,30 +542,33 @@ def main():
 
     cameras, tests = [], 0
     for spec in args.camera or DEFAULT_CAMERAS:
-        label, _, want = spec.partition("=")
+        flip = spec.endswith("@180")
+        label, _, want = spec[:-4 if flip else None].partition("=")
         want = want or label
         pattern = TEST_PATTERNS[tests % len(TEST_PATTERNS)]
         if want == "test":
             tests += 1
-        cameras.append(Camera(label, want, args.fps, pattern))
-    recorder = Recorder(Path(args.out).expanduser(), args.fps, args.max_minutes * 60)
+        cameras.append(Camera(label, want, args.fps, pattern, flip))
+    folder = Path(args.out).expanduser()
+    recorders = {c.label: Recorder(c, folder, args.fps, args.max_minutes * 60) for c in cameras}
     air = Air()
 
-    server = ThreadingHTTPServer(("127.0.0.1", args.port), make_handler(cameras, recorder, air, args.port))
+    server = ThreadingHTTPServer(("127.0.0.1", args.port),
+                                 make_handler(cameras, recorders, folder, air, args.port))
     server.daemon_threads = True
     public = ThreadingHTTPServer(("127.0.0.1", args.public_port), make_public_handler(cameras, air))
     public.daemon_threads = True
     threading.Thread(target=public.serve_forever, daemon=True).start()
     for camera in cameras:
         camera.start()
-    log("Desk cam on http://127.0.0.1:%d/snapshot - clips go to %s" % (args.port, recorder.folder))
+    log("Desk cam on http://127.0.0.1:%d/snapshot - clips go to %s" % (args.port, folder))
     log("Public view on http://127.0.0.1:%d - off air until you switch it on" % args.public_port)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
-        if recorder.recording():
+        for recorder in recorders.values():
             recorder.stop()
 
 
