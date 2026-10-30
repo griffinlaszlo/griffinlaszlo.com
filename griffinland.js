@@ -1408,6 +1408,302 @@ makeElementDraggable("guestbook-icon-group", function() {
     openWindow(gb.win, document.getElementById("guestbook-icon-group"));
 });
 
+// ===== Workstation cam =======================================================
+// The cameras on griffin's desk (the Arducam and the webcam), with a tab for
+// each. tools/workstation-cam.py runs them on griffin's laptop, and the window
+// works two ways:
+//
+// - On a local copy it talks to that server directly: live video, a record
+//   button (clips go to ~/Desktop/workstation cam/) and the ON AIR switch that
+//   puts the cameras on the public view.
+// - On griffinlaszlo.com it reads the public view through the tunnel at
+//   cam.mocial.org: a still frame a second and nothing else, and the icon
+//   only shows while griffin's on air. Add ?public to a local copy's address
+//   to see it the way visitors do.
+//
+// Either way the window checks in every second while it's open, and only
+// pulls pictures of the camera it's showing.
+
+var CAM_LOCAL_URL = "http://127.0.0.1:8080";
+var CAM_PUBLIC_URL = "https://cam.mocial.org";
+
+(function() {
+    var isPublic = !window.IS_LOCAL || /[?&]public\b/.test(location.search);
+    var CAM_URL = isPublic ? CAM_PUBLIC_URL : CAM_LOCAL_URL;
+
+    var icon = el("div", "desktop-icon-group gl-icon");
+    icon.id = "cam-icon-group";
+    var iconImg = el("img");
+    iconImg.src = "icons/webcam.svg";
+    iconImg.alt = "";
+    iconImg.draggable = false;
+    var iconLabel = el("div", "gl-icon-label");
+    var iconLink = el("a", null, "desk cam");
+    iconLink.href = "#";
+    iconLabel.appendChild(iconLink);
+    icon.appendChild(iconImg);
+    icon.appendChild(iconLabel);
+    // Visitors only get the icon while griffin's on air
+    if (isPublic) icon.style.display = "none";
+    document.getElementById("screensaver-icon-group").parentNode.appendChild(icon);
+
+    var cam = makeWindow({ id: "cam-window", title: "workstation cam", icon: "icons/webcam.svg",
+                           className: "gl-cam" + (isPublic ? " gl-cam-public" : "") });
+
+    // One tab per camera, made from whatever cameras the server has, each with
+    // a little light that's green while that camera has a picture
+    var tabs = el("div", "gl-cam-tabs");
+    cam.body.appendChild(tabs);
+
+    // The viewfinder: the feed, camcorder-style overlays, and a VCR-blue
+    // NO SIGNAL (or OFF AIR) screen for when there's no picture
+    var screen = el("div", "gl-cam-screen");
+    var feed = el("img", "gl-cam-feed");
+    feed.alt = "Live view of griffin's desk";
+    feed.draggable = false;
+    var rec = el("div", "gl-cam-rec");
+    var mode = el("div", "gl-cam-mode");
+    var stamp = el("div", "gl-cam-stamp");
+    var noSignal = el("div", "gl-cam-nosignal");
+    var noSignalTitle = el("div", "gl-cam-nosignal-title");
+    var noSignalWhy = el("div", "gl-cam-nosignal-why");
+    noSignal.appendChild(noSignalTitle);
+    noSignal.appendChild(noSignalWhy);
+    [feed, rec, mode, stamp, noSignal].forEach(function(node) { screen.appendChild(node); });
+    cam.body.appendChild(screen);
+
+    // Visitors get the viewfinder and a caption; griffin gets the controls
+    var controls = el("div", "gl-cam-controls");
+    var shutter = el("button", "gl-cam-shutter");
+    shutter.type = "button";
+    var shutterLabel = el("span", "gl-cam-shutter-label", "REC");
+    var said = el("div", "gl-cam-said");
+    var airBtn = el("button", "gl-cam-air", "ON AIR");
+    airBtn.type = "button";
+    airBtn.title = "Show the cameras on griffinlaszlo.com";
+    var folderBtn = el("button", "gl-btn", "Open folder");
+    folderBtn.type = "button";
+    (isPublic ? [said] : [shutter, shutterLabel, said, airBtn, folderBtn])
+        .forEach(function(node) { controls.appendChild(node); });
+    cam.body.appendChild(controls);
+
+    var clipList = el("ul", "gl-cam-clips");
+    if (!isPublic) cam.body.appendChild(clipList);
+
+    var camStatus = null;
+    var busy = false;
+    var saidUntil = 0;
+    var pick = load("gl-cam-pick", null);   // the camera picked last, remembered
+    var shown = null;                       // the camera on screen now
+    var feedCam = null;                     // the camera the feed is pulling
+
+    function camFetch(path, method) {
+        return fetch(CAM_URL + path, { method: method || "GET", cache: "no-store" })
+            .then(function(r) { return r.json(); });
+    }
+
+    // Locally the feed is live video. Publicly it's a fresh still each time
+    // this is called (once a second), loaded off-screen first so the picture
+    // never blinks; every visitor asks for the same second's frame, which
+    // Cloudflare hands out from its cache.
+    function startFeed(label) {
+        if (isPublic) {
+            var next = new Image();
+            next.onload = function() {
+                if (feedCam === label) feed.src = next.src;
+            };
+            next.src = CAM_URL + "/" + encodeURIComponent(label) + ".jpg?t=" + Math.floor(Date.now() / 1000);
+            feedCam = label;
+            return;
+        }
+        if (feedCam === label && feed.getAttribute("src")) return;
+        feed.src = CAM_URL + "/stream?cam=" + encodeURIComponent(label) + "&t=" + Date.now();
+        feedCam = label;
+    }
+    function stopFeed() {
+        feed.removeAttribute("src");
+        feedCam = null;
+    }
+    // A dropped feed is picked back up by the next check-in if the camera's live
+    feed.addEventListener("error", stopFeed);
+
+    function clock(seconds) {
+        var s = Math.floor(seconds);
+        return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+    }
+
+    // The line beside the button: the camera's name, or a message for a few seconds
+    function say(text, forMs) {
+        said.textContent = text;
+        saidUntil = forMs ? Date.now() + forMs : 0;
+    }
+
+    function renderTabs(cams, recording) {
+        var labels = cams.map(function(c) { return c.label; }).join("|");
+        if (tabs.getAttribute("data-labels") !== labels) {
+            tabs.innerHTML = "";
+            cams.forEach(function(c) {
+                var tab = el("button", "gl-cam-tab");
+                tab.type = "button";
+                tab.setAttribute("data-cam", c.label);
+                tab.appendChild(el("span", "gl-cam-tab-light"));
+                tab.appendChild(document.createTextNode(c.label));
+                tab.addEventListener("click", function() {
+                    pick = c.label;
+                    save("gl-cam-pick", pick);
+                    render(camStatus);
+                });
+                tabs.appendChild(tab);
+            });
+            tabs.setAttribute("data-labels", labels);
+        }
+        cams.forEach(function(c, i) {
+            var tab = tabs.children[i];
+            var on = !!shown && c.label === shown.label;
+            tab.classList.toggle("gl-cam-tab-on", on);
+            tab.classList.toggle("gl-cam-tab-live", c.live);
+            tab.setAttribute("aria-pressed", on);
+            // Stay on the camera that's recording until it stops
+            tab.disabled = recording && !on;
+        });
+    }
+
+    function render(s) {
+        camStatus = s;
+        var cams = s ? s.cameras : [];
+        if (s && s.recording) pick = s.recording_cam;
+        shown = cams.filter(function(c) { return c.label === pick; })[0] || cams[0] || null;
+        renderTabs(cams, !!(s && s.recording));
+
+        var offAir = isPublic && !(s && s.on_air);
+        var live = !offAir && !!(shown && shown.live);
+        cam.win.classList.toggle("gl-cam-live", live);
+        cam.win.classList.toggle("gl-cam-recording", !!(s && s.recording));
+        if (isPublic) icon.style.display = s && s.on_air ? "" : "none";
+
+        if (live) {
+            startFeed(shown.label);
+        } else {
+            stopFeed();
+            noSignalTitle.textContent = offAir ? "OFF AIR" : "NO SIGNAL";
+            noSignalWhy.textContent = offAir ? "griffin's not broadcasting right now - check back later"
+                : !s ? "the camera server isn't running - start it with\npython3 tools/workstation-cam.py"
+                : shown ? (shown.problem || "waiting for a picture") : "the server has no cameras";
+        }
+
+        mode.textContent = live && shown.size ? shown.size.split("x")[1] + "p" + shown.fps : "";
+        rec.textContent = isPublic ? (live ? "LIVE" : "")
+            : s && s.recording ? "REC " + clock(s.seconds) : "";
+        var now = new Date();
+        stamp.textContent = now.toLocaleString("en-US", { month: "short" }).toUpperCase() + " " +
+            now.getDate() + " " + now.getFullYear() + "  " +
+            String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+
+        if (isPublic) {
+            say(live ? "live from griffin's desk - a new frame every second" : "");
+            return;
+        }
+
+        shutter.disabled = busy || !s || (!live && !s.recording);
+        shutter.setAttribute("aria-label", s && s.recording ? "Stop recording" : "Start recording");
+        shutterLabel.textContent = s && s.recording ? "STOP" : "REC";
+        airBtn.disabled = busy || !s;
+        airBtn.classList.toggle("gl-cam-air-on", !!(s && s.on_air));
+        airBtn.setAttribute("aria-pressed", !!(s && s.on_air));
+        folderBtn.disabled = !s;
+        if (Date.now() > saidUntil) say(shown && shown.name ? shown.name : "");
+
+        clipList.innerHTML = "";
+        (s ? s.clips : []).slice(0, 3).forEach(function(clip) {
+            var li = el("li", null, clip.name.replace(/\.mp4$/, ""));
+            li.appendChild(el("span", "gl-cam-clip-size", clip.mb + " MB"));
+            clipList.appendChild(li);
+        });
+    }
+
+    function checkIn() {
+        if ($(cam.win).is(":hidden")) {
+            stopFeed();
+            return;
+        }
+        camFetch("/status").then(render).catch(function() { render(null); });
+    }
+    setInterval(checkIn, 1000);
+
+    // With the window shut, visitors' pages still look in every half minute,
+    // so the icon turns up when griffin goes on air
+    if (isPublic) {
+        var lookForBroadcast = function() {
+            if (!$(cam.win).is(":hidden")) return;
+            camFetch("/status").then(function(s) {
+                icon.style.display = s.on_air ? "" : "none";
+            }).catch(function() {
+                icon.style.display = "none";
+            });
+        };
+        onDesktopReady(lookForBroadcast);
+        setInterval(lookForBroadcast, 30000);
+    }
+
+    // A POST to the local server, then show where things landed
+    function act(path, onDone) {
+        if (busy || !camStatus) return;
+        busy = true;
+        shutter.disabled = airBtn.disabled = true;
+        camFetch(path, "POST").then(function(s) {
+            busy = false;
+            if (s.error) {
+                say(s.error, 4000);
+                checkIn();
+                return;
+            }
+            if (onDone) onDone(s);
+            render(s);
+        }).catch(function() {
+            busy = false;
+            render(null);
+        });
+    }
+
+    function toggleRecording() {
+        if (!camStatus) return;
+        if (camStatus.recording) {
+            say("saving...");
+            act("/record/stop", function(s) {
+                say(s.saved ? "saved to " + s.folder.split("/").pop() : "that clip didn't save", 4000);
+            });
+        } else {
+            act("/record/start?cam=" + encodeURIComponent(shown ? shown.label : ""));
+        }
+    }
+
+    function toggleAir() {
+        if (!camStatus) return;
+        act(camStatus.on_air ? "/air/off" : "/air/on", function(s) {
+            say(s.on_air ? "on air at " + s.public_url.replace(/^https?:\/\//, "") : "off air", 4000);
+        });
+    }
+
+    function openClipsFolder() {
+        camFetch("/clips/open", "POST").catch(function() {});
+    }
+
+    shutter.addEventListener("click", toggleRecording);
+    airBtn.addEventListener("click", toggleAir);
+    folderBtn.addEventListener("click", openClipsFolder);
+
+    cam.win.insertBefore(buildMenuBar(cam.win, standardMenus(cam.win, isPublic ? {} : {
+        file: [{ label: "Record / stop", action: toggleRecording },
+               { label: "On air / off air", action: toggleAir },
+               { label: "Open clips folder", action: openClipsFolder }, "-"]
+    })), cam.body);
+
+    makeElementDraggable("cam-icon-group", function() {
+        openWindow(cam.win, icon);
+        checkIn();
+    });
+})();
+
 // ===== Startup ===============================================================
 // The parked ad slides onto the desktop shortly after it appears
 

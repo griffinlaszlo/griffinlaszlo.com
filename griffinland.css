@@ -690,6 +690,7 @@ html.gated body.dark-mode > header,
 #guestbook-icon-group  { top: 288px; right: 81px; }
 #calculator-icon-group { top: 288px; right: 10px; }
 #screensaver-icon-group { top: 395px; right: 10px; }
+#cam-icon-group        { top: 395px; right: 81px; }   /* local copies only */
 
 /* ===== Window kit =========================================================== */
 .gl-window {
@@ -1519,6 +1520,267 @@ html.gated #gl-horizon {
 }
 .gl-calc-wide {
     grid-column: span 2;
+}
+
+/* ===== Workstation cam ====================================================== */
+#cam-window {
+    width: 520px;
+}
+.gl-cam .gl-body {
+    background: #d8d8d8;
+    padding: 10px;
+}
+/* Win95-style tabs, one per camera, sitting on the viewfinder */
+.gl-cam-tabs {
+    display: flex;
+    gap: 2px;
+    padding-left: 4px;
+}
+.gl-cam-tabs:empty {
+    display: none;
+}
+.gl-cam-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: -2px;
+    padding: 3px 12px 4px;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 12px;
+    color: #000;
+    background: #c8c8c8;
+    border: 2px outset #f0f0f0;
+    border-bottom: none;
+    border-radius: 0;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+.gl-cam-tab-on {
+    position: relative;
+    z-index: 1;
+    padding-top: 5px;
+    font-weight: bold;
+    background: #d8d8d8;
+}
+.gl-cam-tab:disabled {
+    color: #808080;
+    cursor: default;
+}
+.gl-cam-tab-light {
+    width: 7px;
+    height: 7px;
+    background: #707070;
+    border: 1px solid #303030;
+    border-radius: 50%;
+}
+.gl-cam-tab-live .gl-cam-tab-light {
+    background: #30e030;
+}
+
+/* A 16:9 viewfinder with camcorder corner marks */
+.gl-cam-screen {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #000;
+    border: 2px inset #d8d8d8;
+    font-family: "Courier New", Courier, monospace;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 1px 1px 0 #000;
+}
+.gl-cam-screen::before {
+    content: "";
+    position: absolute;
+    inset: 10px;
+    z-index: 1;
+    pointer-events: none;
+    --mark: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8));
+    background:
+        var(--mark) top left / 18px 2px, var(--mark) top left / 2px 18px,
+        var(--mark) top right / 18px 2px, var(--mark) top right / 2px 18px,
+        var(--mark) bottom left / 18px 2px, var(--mark) bottom left / 2px 18px,
+        var(--mark) bottom right / 18px 2px, var(--mark) bottom right / 2px 18px;
+    background-repeat: no-repeat;
+}
+/* An id, to beat the window kit's img rule */
+#cam-window .gl-cam-feed {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+.gl-cam-rec,
+.gl-cam-mode,
+.gl-cam-stamp {
+    position: absolute;
+    z-index: 2;
+    font-size: 15px;
+}
+/* On a dark chip so it reads over any picture; only the dot blinks */
+.gl-cam-rec {
+    top: 16px;
+    left: 18px;
+    padding: 1px 6px;
+    background: rgba(0, 0, 0, 0.6);
+    text-shadow: none;
+}
+.gl-cam-rec:empty {
+    display: none;
+}
+.gl-cam-rec::before {
+    content: "● ";
+    color: #ff3030;
+    animation: gl-cam-blink 1s steps(1) infinite;
+}
+@keyframes gl-cam-blink {
+    50% { color: transparent; }
+}
+.gl-cam-mode {
+    top: 16px;
+    right: 18px;
+}
+.gl-cam-stamp {
+    bottom: 16px;
+    right: 18px;
+    white-space: pre;
+}
+.gl-cam-nosignal {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+    background: #0000a8;
+    text-align: center;
+}
+.gl-cam-live .gl-cam-nosignal {
+    display: none;
+}
+.gl-cam-nosignal-title {
+    font-size: 28px;
+    letter-spacing: 4px;
+}
+.gl-cam-nosignal-why {
+    font-size: 13px;
+    font-weight: normal;
+    white-space: pre-line;
+}
+.gl-cam-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+/* The record button: a red dot that turns into a stop square */
+.gl-cam-shutter {
+    position: relative;
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: #e8e8e8;
+    border: 2px outset #f8f8f8;
+    border-radius: 50%;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+.gl-cam-shutter::after {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    background: #e02020;
+    border: 1px solid #600;
+    border-radius: 50%;
+}
+.gl-cam-shutter:active {
+    border-style: inset;
+}
+.gl-cam-shutter:disabled {
+    cursor: default;
+}
+.gl-cam-shutter:disabled::after {
+    background: #b0a0a0;
+    border-color: #807070;
+}
+.gl-cam-recording .gl-cam-shutter::after {
+    inset: 11px;
+    border-radius: 0;
+}
+.gl-cam-shutter-label {
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    color: #000;
+}
+.gl-cam-recording .gl-cam-shutter-label {
+    color: #c00000;
+}
+.gl-cam-said {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 12px;
+    color: #404040;
+}
+/* The ON AIR switch: an unlit studio sign until it's on */
+.gl-cam-air {
+    flex: 0 0 auto;
+    padding: 4px 10px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: #7a3a3a;
+    background: #3a2020;
+    border: 2px outset #f0f0f0;
+    border-radius: 0;
+    cursor: url('cursor-pointer.png') 8 0, pointer;
+}
+.gl-cam-air:active {
+    border-style: inset;
+}
+.gl-cam-air-on {
+    color: #fff;
+    background: #e02020;
+    text-shadow: 0 0 6px #ffb0b0;
+    box-shadow: 0 0 8px rgba(255, 40, 40, 0.7);
+}
+/* Visitors only get the caption under the picture */
+.gl-cam-public .gl-cam-said {
+    text-align: center;
+}
+
+.gl-cam-clips {
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 12px;
+}
+.gl-cam-clips:empty {
+    display: none;
+}
+.gl-cam-clips li {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 6px;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+}
+.gl-cam-clips li::before {
+    content: "▶";
+    margin-right: 6px;
+    color: #000080;
+}
+.gl-cam-clip-size {
+    margin-left: auto;
+    color: #808080;
 }
 
 /* ===== Guestbook ============================================================ */

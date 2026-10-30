@@ -18,6 +18,8 @@ tray clock and fonts are mocial's, and only the desktop changes.
 | `icons/` | Pixel desktop icons, drawn as SVG. |
 | `supabase/guestbook.sql` | Sets up the guestbook's table in Supabase. |
 | `tools/griffin-rig.py` | Cuts griffin's chairlift art into the animation layers in `gifs/griffin/`. |
+| `tools/workstation-cam.py` | Serves the desk cam to local copies and records its clips (below). |
+| `tools/desk-cam.command` | Double-click to start the desk cam server and its public tunnel together. |
 
 Because these are copies, a fix to the shell on mocial has to be copied here
 too. Keep `main.css` an exact copy and put griffinland's own styling in
@@ -123,6 +125,55 @@ headings in `griffinland.css`. The desktop is forest green (`--gl-forest`).
 Everything that moves holds still for visitors who've asked their system for
 reduced motion. Below 960px the horizon steps aside and the badges move to
 the end of the page.
+
+## The desk cam
+
+The two cameras on griffin's desk, plugged into the Plugable dock - the
+Arducam (UC-A53) and a NexiGo N60 webcam - with a tab for each. Everything
+runs on griffin's laptop. Double-click `tools/desk-cam.command` to start it:
+a Terminal window runs the camera server and the Cloudflare tunnel together,
+and closing the window stops both. (`python3 tools/workstation-cam.py` runs
+the server on its own, without the tunnel.)
+
+**On a local copy** the desk cam icon sits next to the screensaver and the
+window is the full control panel: live video, REC (records whichever tab is
+showing, to `~/Desktop/workstation cam/`, named after the camera; a clip
+left running stops itself after 10 minutes), Open folder, and **ON AIR**.
+
+**On griffinlaszlo.com** visitors only see the cameras while ON AIR is lit.
+The icon turns up when griffin goes on air (pages check every half minute),
+and the window is view-only: a fresh still each second and a LIVE badge,
+then an OFF AIR screen once it stops. Add `?public` to a local copy's
+address to see it the way visitors do.
+
+How it fits together:
+
+- The server listens on two ports, both only on the laptop itself. 8080 is
+  the control panel - live video, recording, ON AIR - and only pages from
+  this machine can use it. 8081 is the public view: still frames and whether
+  it's on air, nothing else, and it refuses frames while off air.
+- The tunnel (`desk-cam`, config in `~/.cloudflared/desk-cam.yml`) carries
+  `https://cam.mocial.org` to port 8081 and nowhere else. It's on mocial.org
+  because that domain's DNS is at Cloudflare; griffinlaszlo.com's is at
+  GoDaddy. `CAM_PUBLIC_URL` in griffinland.js points the site at it.
+- ON AIR is off every time the server starts, so a restart never puts the
+  cameras back online.
+- Cloudflare keeps each frame for a second, so the laptop uploads about one
+  frame a second however many people are watching.
+- Cameras are found by part of their name: the Arducam calls itself "USB
+  Camera" and the webcam "NexiGo N60 FHD Webcam". `--list` shows the names,
+  and `--camera label=name`, once per camera, replaces the pair. A name of
+  `test` serves a test pattern instead.
+- It's fine to start it before plugging the cameras in, and it picks a
+  camera back up after it's unplugged.
+- The first run asks for camera permission for the app it's started from
+  (Terminal). If a camera opens but the window stays on NO SIGNAL with
+  "check camera permission", allow it in System Settings > Privacy &
+  Security > Camera and restart.
+- The tunnel's log is `~/Library/Logs/desk-cam-tunnel.log`. To take the
+  public address down for good: `cloudflared tunnel delete desk-cam`, then
+  remove the `cam` record from mocial.org's DNS in Cloudflare.
+- Needs ffmpeg and cloudflared (`brew install ffmpeg cloudflared`).
 
 ## Deploying
 
