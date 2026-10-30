@@ -102,6 +102,11 @@ headings in `griffinland.css`. The desktop is forest green (`--gl-forest`).
   going over. The lift towers are doodled in colour to sit with the chair art
   (`towerSVG()`: blue pole, ladder, yellow pad, braced cross-arm and the wheel
   train the cable rides over), with a wobble filter on every line.
+  The lift runs both ways: a second rope behind carries chairs back down,
+  right to left. They're the empty chair mirrored, smaller and paler, and
+  ride behind the towers. Each tower has a second, smaller wheel train for
+  that rope (`backTrainSVG()`), and `BACK_UP` sets how far above the near
+  rope it sits.
 - **griffin, on the lift** - one chair carries griffin, animated from his own
   chairlift art; the other chairs are the same chair, empty.
   `tools/griffin-rig.py` cuts the drawing into layers - chair and body, each

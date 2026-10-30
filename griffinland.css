@@ -1435,6 +1435,32 @@ html.gated #gl-horizon {
     from { left: -80px; top: 32px; }
     to { left: calc(100% + 80px); top: 12px; }
 }
+/* The downhill side: the far rope, 11px higher (BACK_UP in griffinland.js),
+   so 21px down at the left and 3px at the right once the hanger grips it.
+   Behind the towers, smaller, paler, mirrored to face downhill, and riding
+   right to left at the same rope speed. */
+.gl-lift-back {
+    position: absolute;
+    inset: 0;
+}
+.gl-chair-back {
+    animation-name: gl-ride-back;
+}
+.gl-chair-back .gl-chair-swing {
+    margin-left: -30px;
+    margin-top: -3px;
+}
+.gl-chair-back .gl-chair-empty {
+    width: 60px;
+    height: 64px;
+    transform: scaleX(-1);
+    filter: saturate(0.55) brightness(1.08);
+    opacity: 0.82;
+}
+@keyframes gl-ride-back {
+    from { left: calc(100% + 60px); top: 3px; }
+    to { left: -60px; top: 21px; }
+}
 @keyframes gl-swing {
     from { transform: rotate(-3deg); }
     to { transform: rotate(3deg); }

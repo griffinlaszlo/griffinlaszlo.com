@@ -778,14 +778,24 @@ document.getElementById("gl-webring-random").addEventListener("click", function(
 // towers are doodled in colour on their own layer, and the chairs (one of
 // them carrying griffin) ride along on top.
 // Redrawn to fit whenever the window changes size.
+//
+// The lift runs both ways, like a real one: the rope is one loop, and the
+// same towers carry it up on the near side and back down on the far side.
+// The far side is drawn a little higher, with smaller, paler chairs facing
+// the other way, and sits behind the towers so the poles pass in front of it.
 
 var GROUND_Y = 160;              // the ground line, in the horizon's 170px
 var CABLE_LEFT = 34;             // the cable's height at the left edge...
 var CABLE_RIGHT = 16;            // ...and the right, so it climbs a little
 var LIFT_SECONDS = 70;           // one chair's trip across the screen
 
+var BACK_UP = 11;                // the far rope sits this much higher on screen
+
 function cableY(x, W) {
     return CABLE_LEFT + (CABLE_RIGHT - CABLE_LEFT) * (x / W);
+}
+function backCableY(x, W) {
+    return cableY(x, W) - BACK_UP;
 }
 
 function drawTrees() {
@@ -821,6 +831,9 @@ function drawTrees() {
     var towers = document.querySelector("#gl-horizon .gl-towers");
     if (towers) {
         var art = "";
+        // The far rope and its wheels first, so the towers stand in front...
+        for (var b = 170; b < W; b += 380) art += backTrainSVG(b, cableY(b, W), backCableY(b, W));
+        art += '<path d="M0 ' + backCableY(0, W) + ' L' + W + ' ' + backCableY(W, W) + '" stroke="#e8eef2" stroke-width="1.6" fill="none"/>';
         for (var t = 170; t < W; t += 380) art += towerSVG(t, cableY(t, W), base);
         // ...and the cable, climbing gently left to right over their wheels
         art += '<path d="M0 ' + cableY(0, W) + ' L' + W + ' ' + cableY(W, W) + '" stroke="#fff" stroke-width="2" fill="none"/>';
@@ -877,6 +890,23 @@ function towerSVG(t, cy, base) {
     for (var k = -1.5; k <= 1.5; k++) {
         svg += '<circle cx="' + (t + k * 10) + '" cy="' + (cy + 3.2) + '" r="3.4" fill="#f4f4f4"' + ink + '/>' +
                '<circle cx="' + (t + k * 10) + '" cy="' + (cy + 3.2) + '" r="0.9" fill="' + TOWER_INK + '"/>';
+    }
+    return svg;
+}
+
+// The far side of a tower: a post up from the pole top to a shorter, paler
+// cross-arm carrying a smaller wheel train for the downhill rope. Drawn behind
+// the tower itself, so the pole covers the post's foot. t is the tower's x,
+// cy the near rope's height there and by the far rope's.
+function backTrainSVG(t, cy, by) {
+    var ink = ' stroke="' + TOWER_INK + '" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"';
+    var post = 'M' + t + ' ' + (cy + 12) + ' L' + (t + 3) + ' ' + (by + 9);
+    var svg = '<path d="' + post + '" stroke="' + TOWER_INK + '" stroke-width="4.5" stroke-linecap="round"/>' +
+              '<path d="' + post + '" stroke="#5f95c4" stroke-width="2" stroke-linecap="round"/>';
+    svg += '<rect x="' + (t - 16) + '" y="' + (by + 6.5) + '" width="38" height="4.5" rx="1.2" fill="#5f95c4"' + ink + '/>';
+    svg += '<rect x="' + (t - 13) + '" y="' + (by + 3) + '" width="32" height="3" rx="1" fill="#dcdcdc"' + ink + '/>';
+    for (var k = -1.5; k <= 1.5; k++) {
+        svg += '<circle cx="' + (t + 3 + k * 7.5) + '" cy="' + (by + 2.4) + '" r="2.5" fill="#f4f4f4"' + ink + '/>';
     }
     return svg;
 }
@@ -945,6 +975,30 @@ function buildLift() {
         }
         chair.appendChild(swing);
         lift.appendChild(chair);
+    }
+
+    // The chairs coming back down: the same empty chair, mirrored to face
+    // downhill, on the far rope. Spaced half a gap off the near chairs, so
+    // the two lines pass each other instead of moving in step.
+    var back = document.querySelector("#gl-horizon .gl-lift-back");
+    if (!back) return;
+    for (var j = 0; j < LIFT_CHAIRS; j++) {
+        var downChair = el("div", "gl-chair gl-chair-back");
+        var downSwing = el("div", "gl-chair-swing");
+        var downImg = el("img", "gl-chair-empty");
+        downImg.src = art("empty-chair.png");
+        downImg.alt = "";
+        downImg.draggable = false;
+        downSwing.appendChild(downImg);
+        downChair.style.animationDelay = (-LIFT_SECONDS * (j + 0.5) / LIFT_CHAIRS) + "s";
+        downSwing.style.animationDelay = (-j * 0.9) + "s";
+        if (REDUCED_MOTION) {
+            var bx = window.innerWidth - (j + 0.5) / LIFT_CHAIRS * window.innerWidth;
+            downChair.style.left = bx + "px";
+            downChair.style.top = (backCableY(bx, window.innerWidth) - 2) + "px";
+        }
+        downChair.appendChild(downSwing);
+        back.appendChild(downChair);
     }
 }
 
