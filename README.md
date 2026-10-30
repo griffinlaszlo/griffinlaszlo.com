@@ -19,8 +19,7 @@ tray clock and fonts are mocial's, and only the desktop changes.
 | `supabase/guestbook.sql` | Sets up the guestbook's table in Supabase. |
 | `tools/griffin-rig.py` | Cuts griffin's chairlift art into the animation layers in `gifs/griffin/`. |
 | `tools/crew/*.svg`, `tools/crew-build.py` | The other riders on the lift, drawn to match griffin's art, and the script that renders them into the layers in `gifs/crew/`. |
-| `tools/workstation-cam.py` | Serves the desk cam to local copies and records its clips (below). |
-| `tools/desk-cam.command` | Double-click to start the desk cam - server, public tunnel, and both camera windows. |
+| `tools/workstation-cam.py`, `tools/desk-cam.command` | The desk cam (below). |
 
 Because these are copies, a fix to the shell on mocial has to be copied here
 too. Keep `main.css` an exact copy and put griffinland's own styling in
@@ -31,15 +30,6 @@ both sites load.
 New windows: build them with `buildWindowChrome(win, "TITLE")`, add their
 title-bar icon to `windowIcons`, and open them with `showPopup(id, iconEl)` -
 the same calls mocial uses.
-
-## Running it locally
-
-```bash
-python3 -m http.server 8900
-```
-
-Then open `http://localhost:8900`. The password gate is skipped on localhost;
-add `?lock` to see it.
 
 ## Password gate and its games
 
@@ -142,72 +132,10 @@ the end of the page.
 
 ## The desk cam
 
-The two cameras on griffin's desk, plugged into the Plugable dock - the
-Arducam (UC-A53) and a NexiGo N60 webcam. Everything runs on griffin's
-laptop. Double-click **Desk Cam** on the Mac's desktop (a shortcut to
-`tools/desk-cam.command`) and it starts griffinland's local copy if it isn't
-running, then the camera server and the Cloudflare tunnel in a Terminal
-window, and opens griffinland with both camera windows up. If the desk cam's
-already running it just opens the windows. Closing the Terminal window stops
-the cameras and the tunnel. (`python3 tools/workstation-cam.py` runs the
-server on its own, without the tunnel.)
-
-The desk cam icon opens a window per camera, side by side. **Split screen**
-(a button in each window, or View > Split screen) tiles them over the whole
-desktop above the taskbar - side by side, or one above the other when that
-leaves the pictures bigger - each picture fitted to its window on black, never
-cropped. Esc, the button again, or closing either window puts them back.
-Phone-sized screens stack every window anyway, so there it's hidden.
-
-**On a local copy** each window is a control panel: live video, REC
-(records that camera, to `~/Desktop/workstation cam/`, named after it; both
-can record at once, and a clip left running stops itself after 10 minutes)
-with that camera's latest clips underneath, Open folder, and **ON AIR**,
-which covers both cameras. `?cams` on the address opens the windows straight
-away - the Desk Cam shortcut uses it.
-
-**On griffinlaszlo.com** visitors only see the cameras while ON AIR is lit.
-The icon turns up when griffin goes on air (pages check every half minute),
-and the windows are view-only: a fresh still each second and a LIVE badge,
-then an OFF AIR screen once it stops. Add `?public` to a local copy's
-address to see it the way visitors do.
-
-How it fits together:
-
-- The server listens on two ports, both only on the laptop itself. 8080 is
-  the control panel - live video, recording, ON AIR - and only pages from
-  this machine can use it. 8081 is the public view: still frames and whether
-  it's on air, nothing else, and it refuses frames while off air.
-- The tunnel (`desk-cam`, config in `~/.cloudflared/desk-cam.yml`) carries
-  `https://cam.mocial.org` to port 8081 and nowhere else. It's on mocial.org
-  because that domain's DNS is at Cloudflare; griffinlaszlo.com's is at
-  GoDaddy. `CAM_PUBLIC_URL` in griffinland.js points the site at it.
-- ON AIR is off every time the server starts, so a restart never puts the
-  cameras back online.
-- Cloudflare keeps each frame for a second, so the laptop uploads about one
-  frame a second however many people are watching.
-- Cameras are found by part of their name: the Arducam calls itself "USB
-  Camera" and the webcam "NexiGo N60 FHD Webcam". The Arducam's mounted
-  upside down, so the server turns its picture 180 degrees - live, public
-  and in clips. `--list` shows the names, and `--camera label=name[@180]`,
-  once per camera, replaces the pair (`@180` for the turn). A name of `test`
-  serves a test pattern instead.
-- It's fine to start it before plugging the cameras in, and it picks a
-  camera back up after it's unplugged.
-- The first run asks for camera permission for the app it's started from
-  (Terminal). If a camera opens but the window stays on NO SIGNAL with
-  "check camera permission", allow it in System Settings > Privacy &
-  Security > Camera and restart.
-- The tunnel's log is `~/Library/Logs/desk-cam-tunnel.log`. To take the
-  public address down for good: `cloudflared tunnel delete desk-cam`, then
-  remove the `cam` record from mocial.org's DNS in Cloudflare.
-- Needs ffmpeg and cloudflared (`brew install ffmpeg cloudflared`).
-
-## Deploying
-
-GitHub Pages serves `main`, and `CNAME` points it at griffinlaszlo.com.
-Pushing `main` publishes immediately.
-
-DNS lives at GoDaddy: four `@` A records to GitHub Pages (`185.199.108.153`,
-`185.199.109.153`, `185.199.110.153`, `185.199.111.153`) and `www` as a CNAME
-to `griffinlaszlo.github.io`.
+The two cameras on griffin's desk. Visitors only see them while griffin
+is ON AIR: the icon turns up, and each camera gets a view-only window with
+a fresh still each second and a LIVE badge, then an OFF AIR screen once it
+stops. **Split screen** (a button in each window, or View > Split screen)
+tiles them over the desktop, each picture fitted to its window on black,
+never cropped. Esc, the button again, or closing either window puts them
+back. Phone-sized screens stack every window anyway, so there it's hidden.
